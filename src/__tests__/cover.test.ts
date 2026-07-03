@@ -2,10 +2,10 @@ import { GET } from "@/app/apps/[slug]/cover/route";
 import { describe, expect, it } from "vitest";
 
 describe("cover route", () => {
-  it("returns cover.png when file exists", async () => {
+  it("returns cover.webp when file exists", async () => {
     const ctx = { params: Promise.resolve({ slug: "hobo" }) };
     const r = await GET(new Request("https://x/"), ctx);
-    expect(r.headers.get("Content-Type")).toBe("image/png");
+    expect(r.headers.get("Content-Type")).toBe("image/webp");
     expect(r.status).toBe(200);
   });
 
@@ -28,7 +28,7 @@ describe("cover route", () => {
     });
     const aType = a.headers.get("Content-Type");
     const bType = b.headers.get("Content-Type");
-    expect(aType).toBe("image/png");
+    expect(aType).toBe("image/webp");
     expect(bType).toBe("image/svg+xml");
   });
 });

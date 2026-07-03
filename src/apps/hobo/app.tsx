@@ -27,7 +27,7 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
 
   useEffect(() => {
     const img = new Image();
-    img.src = `/apps/${manifest.slug}/assets/hobo-scream.png`;
+    img.src = `/apps/${manifest.slug}/assets/hobo-scream.webp`;
   }, [manifest.slug]);
 
   useEffect(() => {
@@ -164,7 +164,7 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
             style={{ zIndex: 10 }}
           >
             <img
-              src={`/apps/${manifest.slug}/assets/${isScreaming ? "hobo-scream" : "hobo-regular"}.png`}
+              src={`/apps/${manifest.slug}/assets/${isScreaming ? "hobo-scream" : "hobo-regular"}.webp`}
               alt={manifest.title}
               className="w-full h-full object-cover"
               draggable={false}
