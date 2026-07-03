@@ -56,52 +56,8 @@ body {
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
-@keyframes float-ore {
-  0% {
-    opacity: 0;
-    transform: translateY(0) scale(0.8);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(-20px) scale(1.1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-80px) scale(0.9) rotate(5deg);
-  }
-}
-
-.animate-float-ore {
-  animation: float-ore 1s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-}
-
-@keyframes hobo-shake {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  20% {
-    transform: translate(-4px, 4px) rotate(-1deg);
-  }
-  40% {
-    transform: translate(4px, -2px) rotate(1.5deg);
-  }
-  60% {
-    transform: translate(-3px, -3px) rotate(-1.5deg);
-  }
-  80% {
-    transform: translate(3px, 2px) rotate(1deg);
-  }
-}
-
-.animate-hobo-shake {
-  animation: hobo-shake 0.3s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .live-dot,
-  .animate-float-ore,
-  .animate-hobo-shake {
+  .live-dot {
     animation: none;
   }
 }

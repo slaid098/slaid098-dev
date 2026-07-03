@@ -9,38 +9,31 @@ import type { Manifest } from "@/lib/manifest";
 import { describe, expect, it } from "vitest";
 
 describe("apps manifests", () => {
-  it("includes cucumber slug", () => {
-    expect(getAllSlugs()).toContain("cucumber");
+  it("includes hobo slug", () => {
+    expect(getAllSlugs()).toContain("hobo");
   });
 
-  it("reads cucumber manifest", () => {
-    const m = readManifest("cucumber");
+  it("reads hobo manifest", () => {
+    const m = readManifest("hobo");
     expect(m).not.toBeNull();
-    expect(m?.title).toBe("Справка об огурце");
-    expect(m?.engine).toBe("static");
-    expect(m?.created).toBe("2026-07-03");
+    expect(m?.title).toBe("Орущий бомж");
+    expect(m?.created).toBe("2026-07-04");
   });
 
   it("returns all manifests", () => {
     const all = readAllManifests();
     expect(all.length).toBeGreaterThan(0);
-    expect(all.some((m) => m.slug === "cucumber")).toBe(true);
+    expect(all.some((m) => m.slug === "hobo")).toBe(true);
   });
 
   it("returns null for missing slug", () => {
     expect(readManifest("does-not-exist-xyz")).toBeNull();
   });
 
-  it("returns correct neighbors for cucumber and hobo", () => {
-    // cucumber (2026-07-03) < hobo (2026-07-04)
-    // so cucumber's next is hobo, hobo's prev is cucumber
-    const c = getNeighbors("cucumber");
-    expect(c.prev).toBeNull();
-    expect(c.next).toBe("hobo");
-
-    const h = getNeighbors("hobo");
-    expect(h.prev).toBe("cucumber");
-    expect(h.next).toBeNull();
+  it("returns null neighbors for single app", () => {
+    const { prev, next } = getNeighbors("hobo");
+    expect(prev).toBeNull();
+    expect(next).toBeNull();
   });
 
   it("returns null neighbors for unknown slug", () => {

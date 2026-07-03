@@ -1,21 +1,15 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import type { ReactNode } from "react";
-
-export type EngineName = "static" | "canvas" | "quiz" | "clicker";
 
 export type Manifest = {
   slug: string;
   title: string;
   description: string;
-  engine?: EngineName;
   tags?: string[];
   ogImage?: string;
   content?: string;
   created?: string;
 };
-
-export type Engine = (ctx: { manifest: Manifest; folder: string }) => ReactNode;
 
 export function getAppsDir(): string {
   return join(process.cwd(), "src", "apps");
@@ -77,7 +71,6 @@ function normalizeManifest(data: Partial<Manifest>, fallbackSlug: string): Manif
     slug: data.slug ?? fallbackSlug,
     title: data.title ?? "",
     description: data.description ?? "",
-    engine: data.engine ?? "static",
     tags: data.tags ?? [],
   };
   if (data.ogImage !== undefined) {

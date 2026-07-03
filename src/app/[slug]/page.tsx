@@ -1,5 +1,5 @@
+import { appComponents } from "@/apps/app-components";
 import { AppNav } from "@/components/app-nav";
-import { getEngine } from "@/engines/registry";
 import { getAllSlugs, getAppsDir, getNeighbors, readManifest } from "@/lib/manifest";
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
@@ -48,11 +48,15 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   if (manifest === null) {
     notFound();
   }
-  const engine = getEngine(manifest.engine);
   const { prev, next } = getNeighbors(slug);
+  const AppComponent = appComponents[slug as keyof typeof appComponents];
   return (
     <>
-      {engine({ manifest, folder: `${getAppsDir()}/${slug}` })}
+      {AppComponent ? (
+        <AppComponent manifest={manifest} folder={`${getAppsDir()}/${slug}`} />
+      ) : (
+        notFound()
+      )}
       <AppNav next={next} prev={prev} />
     </>
   );
