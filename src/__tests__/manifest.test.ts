@@ -16,7 +16,7 @@ describe("apps manifests", () => {
   it("reads hobo manifest", () => {
     const m = readManifest("hobo");
     expect(m).not.toBeNull();
-    expect(m?.title).toBe("Орущий бомж");
+    expect(m?.title).toBe("Бомж");
     expect(m?.created).toBe("2026-07-04");
   });
 
