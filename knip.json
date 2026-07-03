@@ -1,5 +1,5 @@
 {
   "entry": [],
   "project": ["src/**/*.ts", "src/**/*.tsx"],
-  "ignoreDependencies": ["tailwindcss"]
+  "ignoreDependencies": ["tailwindcss", "@tailwindcss/typography"]
 }
