@@ -31,10 +31,16 @@ describe("apps manifests", () => {
     expect(readManifest("does-not-exist-xyz")).toBeNull();
   });
 
-  it("returns null neighbors for single app", () => {
-    const { prev, next } = getNeighbors("cucumber");
-    expect(prev).toBeNull();
-    expect(next).toBeNull();
+  it("returns correct neighbors for cucumber and hobo", () => {
+    // cucumber (2026-07-03) < hobo (2026-07-04)
+    // so cucumber's next is hobo, hobo's prev is cucumber
+    const c = getNeighbors("cucumber");
+    expect(c.prev).toBeNull();
+    expect(c.next).toBe("hobo");
+
+    const h = getNeighbors("hobo");
+    expect(h.prev).toBe("cucumber");
+    expect(h.next).toBeNull();
   });
 
   it("returns null neighbors for unknown slug", () => {

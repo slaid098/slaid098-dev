@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <!-- Background subtle vignette -->
+  <radialGradient id="v" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#1a1a1a" stop-opacity="0"/>
+    <stop offset="100%" stop-color="#0a0a0a" stop-opacity="0.8"/>
+  </radialGradient>
+  <rect width="400" height="400" fill="url(#v)" rx="24"/>
+
+  <!-- Shadow under hobo -->
+  <ellipse cx="200" cy="350" rx="90" ry="15" fill="rgba(0,0,0,0.5)"/>
+
+  <!-- Hobo Head / Body -->
+  <g id="hobo-character">
+    <!-- Coat/Shoulders -->
+    <path d="M100 350 C100 270, 300 270, 300 350 Z" fill="#2d3a22" stroke="#121a0d" stroke-width="4"/>
+    <!-- Collar -->
+    <path d="M160 290 L200 330 L240 290" fill="none" stroke="#1e2616" stroke-width="4" stroke-linecap="round"/>
+    <!-- Beard (underlayer dark) -->
+    <path d="M130 180 C130 300, 270 300, 270 180 Z" fill="#1c1c1c"/>
+    <!-- Face -->
+    <circle cx="200" cy="180" r="70" fill="#df9f87" stroke="#8c4f3e" stroke-width="4"/>
+    
+    <!-- Red cheeks -->
+    <circle cx="155" cy="205" r="10" fill="#e25c5c" opacity="0.5"/>
+    <circle cx="245" cy="205" r="10" fill="#e25c5c" opacity="0.5"/>
+    
+    <!-- Red Nose (bulbous hobo nose) -->
+    <path d="M185 185 C185 160, 215 160, 215 185 C215 200, 185 200, 185 185 Z" fill="#e25252" stroke="#a31d1d" stroke-width="4"/>
+
+    <!-- Funny Beard (curly/scruffy) -->
+    <path d="M130 170 C120 230, 150 310, 200 310 C250 310, 280 230, 270 170 C250 190, 240 220, 200 220 C160 220, 150 190, 130 170 Z" fill="#3a3a3a" stroke="#1c1c1c" stroke-width="4" stroke-linejoin="round"/>
+    
+    <!-- Mouth (Screaming Open Mouth, hidden by default but shown on click - or we make it slightly open) -->
+    <ellipse id="mouth" cx="200" cy="235" rx="16" ry="24" fill="#5c1d1d" stroke="#1c1c1c" stroke-width="3"/>
+    <path id="tongue" d="M188 245 C190 235, 210 235, 212 245 Z" fill="#e25252"/>
+    <rect id="tooth" x="194" y="212" width="12" height="6" fill="#f4f4f4" rx="1"/>
+
+    <!-- Crazy Eyes -->
+    <g id="eyes">
+      <!-- Left Eye (huge) -->
+      <circle cx="165" cy="155" r="20" fill="#f4f4f4" stroke="#1c1c1c" stroke-width="4"/>
+      <circle cx="168" cy="155" r="7" fill="#1c1c1c"/>
+      <circle cx="171" cy="151" r="3" fill="#ffffff"/> <!-- glare -->
+
+      <!-- Right Eye (smaller, crazy) -->
+      <circle cx="235" cy="150" r="14" fill="#f4f4f4" stroke="#1c1c1c" stroke-width="4"/>
+      <circle cx="232" cy="150" r="5" fill="#1c1c1c"/>
+      <circle cx="234" cy="148" r="2" fill="#ffffff"/> <!-- glare -->
+    </g>
+
+    <!-- Crazy Bushy Eyebrows -->
+    <path d="M140 130 C150 120, 175 125, 185 135" fill="none" stroke="#1c1c1c" stroke-width="6" stroke-linecap="round"/>
+    <path d="M215 138 C225 123, 245 125, 255 133" fill="none" stroke="#1c1c1c" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- Patched Hat -->
+    <g id="hat">
+      <!-- Brim -->
+      <path d="M110 125 C150 105, 250 105, 290 125" fill="none" stroke="#2c2c2c" stroke-width="12" stroke-linecap="round"/>
+      <!-- Hat Crown -->
+      <path d="M135 120 L150 50 C155 35, 245 35, 250 50 L265 120 Z" fill="#4a3e3d" stroke="#251c1c" stroke-width="4"/>
+      <!-- Ribbon -->
+      <path d="M133 110 C170 100, 230 100, 267 110" fill="none" stroke="#ccff00" stroke-width="10"/> <!-- Lime ribbon! -->
+      <!-- Patch -->
+      <path d="M165 60 L185 55 L190 75 L170 80 Z" fill="#2d3a22" stroke="#121a0d" stroke-width="2"/>
+      <!-- Stitches -->
+      <path d="M162 58 L168 62" stroke="#ccff00" stroke-width="2" stroke-linecap="round"/>
+      <path d="M187 52 L183 58" stroke="#ccff00" stroke-width="2" stroke-linecap="round"/>
+      <path d="M192 73 L188 78" stroke="#ccff00" stroke-width="2" stroke-linecap="round"/>
+      <path d="M168 82 L173 78" stroke="#ccff00" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Dirt on Face -->
+    <path d="M150 180 L155 185" stroke="#4a3b32" stroke-width="3" stroke-linecap="round"/>
+    <path d="M250 170 L255 173" stroke="#4a3b32" stroke-width="3" stroke-linecap="round"/>
+    <path d="M210 135 L213 140" stroke="#4a3b32" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>
