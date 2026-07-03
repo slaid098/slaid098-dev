@@ -26,6 +26,14 @@ export default function Home() {
                   />
                 </div>
                 <div className="p-5">
+                  {app.created !== undefined && (
+                    <time
+                      dateTime={app.created}
+                      className="mb-2 block font-mono text-xs text-muted"
+                    >
+                      {app.created}
+                    </time>
+                  )}
                   <h2 className="mb-1 text-lg font-medium">{app.title}</h2>
                   <p className="text-sm text-muted">{app.description}</p>
                 </div>

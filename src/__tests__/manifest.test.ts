@@ -1,4 +1,11 @@
-import { getAllSlugs, getNeighbors, readAllManifests, readManifest } from "@/lib/manifest";
+import {
+  byCreated,
+  getAllSlugs,
+  getNeighbors,
+  readAllManifests,
+  readManifest,
+} from "@/lib/manifest";
+import type { Manifest } from "@/lib/manifest";
 import { describe, expect, it } from "vitest";
 
 describe("apps manifests", () => {
@@ -11,6 +18,7 @@ describe("apps manifests", () => {
     expect(m).not.toBeNull();
     expect(m?.title).toBe("Справка об огурце");
     expect(m?.engine).toBe("static");
+    expect(m?.created).toBe("2026-07-03");
   });
 
   it("returns all manifests", () => {
@@ -33,5 +41,33 @@ describe("apps manifests", () => {
     const { prev, next } = getNeighbors("does-not-exist-xyz");
     expect(prev).toBeNull();
     expect(next).toBeNull();
+  });
+});
+
+describe("byCreated sort", () => {
+  const m = (slug: string, created?: string): Manifest => {
+    const out: Manifest = { slug, title: slug, description: "" };
+    if (created !== undefined) out.created = created;
+    return out;
+  };
+
+  it("sorts older first", () => {
+    const a = m("a", "2026-03-01");
+    const b = m("b", "2026-07-03");
+    expect([a, b].sort(byCreated)).toEqual([a, b]);
+    expect([b, a].sort(byCreated)).toEqual([a, b]);
+  });
+
+  it("sorts missing created last", () => {
+    const dated = m("a", "2026-07-03");
+    const undated = m("b");
+    expect([dated, undated].sort(byCreated)).toEqual([dated, undated]);
+    expect([undated, dated].sort(byCreated)).toEqual([dated, undated]);
+  });
+
+  it("tie-breaks by slug when dates equal", () => {
+    const a = m("b", "2026-07-03");
+    const b = m("a", "2026-07-03");
+    expect([a, b].sort(byCreated)).toEqual([b, a]);
   });
 });
