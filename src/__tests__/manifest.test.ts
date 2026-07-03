@@ -1,4 +1,4 @@
-import { getAllSlugs, readAllManifests, readManifest } from "@/lib/manifest";
+import { getAllSlugs, getNeighbors, readAllManifests, readManifest } from "@/lib/manifest";
 import { describe, expect, it } from "vitest";
 
 describe("apps manifests", () => {
@@ -21,5 +21,17 @@ describe("apps manifests", () => {
 
   it("returns null for missing slug", () => {
     expect(readManifest("does-not-exist-xyz")).toBeNull();
+  });
+
+  it("returns null neighbors for single app", () => {
+    const { prev, next } = getNeighbors("cucumber");
+    expect(prev).toBeNull();
+    expect(next).toBeNull();
+  });
+
+  it("returns null neighbors for unknown slug", () => {
+    const { prev, next } = getNeighbors("does-not-exist-xyz");
+    expect(prev).toBeNull();
+    expect(next).toBeNull();
   });
 });
