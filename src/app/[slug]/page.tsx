@@ -1,6 +1,6 @@
+import { appComponents } from "@/apps/app-components";
 import { AppNav } from "@/components/app-nav";
-import { getEngine } from "@/engines/registry";
-import { getAllSlugs, getAppsDir, getNeighbors, readManifest } from "@/lib/manifest";
+import { getAllSlugs, getNeighbors, readManifest } from "@/lib/manifest";
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -48,11 +48,33 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   if (manifest === null) {
     notFound();
   }
-  const engine = getEngine(manifest.engine);
   const { prev, next } = getNeighbors(slug);
+  const AppComponent = appComponents[slug as keyof typeof appComponents];
+  if (!AppComponent) {
+    throw new Error(
+      `Missing app component for "${slug}". Register it in src/apps/app-components.ts`,
+    );
+  }
+
   return (
     <>
-      {engine({ manifest, folder: `${getAppsDir()}/${slug}` })}
+      <section className="mx-auto max-w-2xl px-6 pt-16 pb-6 text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight">{manifest.title}</h1>
+        <p className="mt-3 text-lg text-muted">{manifest.description}</p>
+        {manifest.tags && manifest.tags.length > 0 && (
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {manifest.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </section>
+      <AppComponent manifest={manifest} />
       <AppNav next={next} prev={prev} />
     </>
   );

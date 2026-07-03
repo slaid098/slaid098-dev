@@ -1,32 +1,22 @@
 import { readFileSync, readdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import type { ReactNode } from "react";
-
-export type EngineName = "static" | "canvas" | "quiz" | "clicker";
+import { join } from "node:path";
 
 export type Manifest = {
   slug: string;
   title: string;
   description: string;
-  engine?: EngineName;
   tags?: string[];
   ogImage?: string;
   content?: string;
   created?: string;
 };
 
-export type Engine = (ctx: { manifest: Manifest; folder: string }) => ReactNode;
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const appsDir = join(__dirname, "..", "apps");
-
 export function getAppsDir(): string {
-  return appsDir;
+  return join(process.cwd(), "src", "apps");
 }
 
 export function getAllSlugs(): string[] {
-  return readdirSync(appsDir, { withFileTypes: true })
+  return readdirSync(getAppsDir(), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .filter((name) => isSlugDir(name))
@@ -35,7 +25,7 @@ export function getAllSlugs(): string[] {
 
 function isSlugDir(name: string): boolean {
   try {
-    readFileSync(join(appsDir, name, "manifest.json"));
+    readFileSync(join(getAppsDir(), name, "manifest.json"));
     return true;
   } catch {
     return false;
@@ -43,7 +33,7 @@ function isSlugDir(name: string): boolean {
 }
 
 export function readManifest(slug: string): Manifest | null {
-  const file = join(appsDir, slug, "manifest.json");
+  const file = join(getAppsDir(), slug, "manifest.json");
   try {
     const raw = readFileSync(file, "utf8");
     const data = JSON.parse(raw) as Manifest;
@@ -81,7 +71,6 @@ function normalizeManifest(data: Partial<Manifest>, fallbackSlug: string): Manif
     slug: data.slug ?? fallbackSlug,
     title: data.title ?? "",
     description: data.description ?? "",
-    engine: data.engine ?? "static",
     tags: data.tags ?? [],
   };
   if (data.ogImage !== undefined) {
