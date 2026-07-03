@@ -18,7 +18,7 @@ export default function Home() {
                 href={`/${app.slug}`}
                 className="group block overflow-hidden rounded-xl border border-line bg-surface transition duration-200 hover:-translate-y-1 hover:border-accent hover:shadow-[0_12px_40px_-8px_var(--color-accent)]"
               >
-                <div className="aspect-[16/9] overflow-hidden bg-base">
+                <div className="aspect-square overflow-hidden bg-base">
                   <img
                     alt={app.title}
                     src={`/apps/${app.slug}/cover`}
