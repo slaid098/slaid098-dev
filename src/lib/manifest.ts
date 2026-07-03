@@ -13,6 +13,7 @@ export type Manifest = {
   tags?: string[];
   ogImage?: string;
   content?: string;
+  created?: string;
 };
 
 export type Engine = (ctx: { manifest: Manifest; folder: string }) => ReactNode;
@@ -55,16 +56,24 @@ export function readManifest(slug: string): Manifest | null {
 export function readAllManifests(): Manifest[] {
   return getAllSlugs()
     .map((s) => readManifest(s))
-    .filter((m): m is Manifest => m !== null);
+    .filter((m): m is Manifest => m !== null)
+    .sort(byCreated);
 }
 
 export function getNeighbors(slug: string): { prev: string | null; next: string | null } {
-  const slugs = getAllSlugs();
+  const slugs = readAllManifests().map((m) => m.slug);
   const index = slugs.indexOf(slug);
   if (index === -1) return { prev: null, next: null };
   const prev = index > 0 ? (slugs[index - 1] ?? null) : null;
   const next = index < slugs.length - 1 ? (slugs[index + 1] ?? null) : null;
   return { prev, next };
+}
+
+export function byCreated(a: Manifest, b: Manifest): number {
+  const ca = a.created ?? "9999-12-31";
+  const cb = b.created ?? "9999-12-31";
+  if (ca === cb) return a.slug.localeCompare(b.slug);
+  return ca < cb ? -1 : 1;
 }
 
 function normalizeManifest(data: Partial<Manifest>, fallbackSlug: string): Manifest {
@@ -80,6 +89,9 @@ function normalizeManifest(data: Partial<Manifest>, fallbackSlug: string): Manif
   }
   if (data.content !== undefined) {
     out.content = data.content;
+  }
+  if (data.created !== undefined) {
+    out.created = data.created;
   }
   return out;
 }
