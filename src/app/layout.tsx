@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
@@ -14,6 +16,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <header className="px-6 py-4 text-xs text-gray-500">slaid098.dev</header>
         <main>{children}</main>
         <footer />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
