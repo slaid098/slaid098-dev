@@ -6,7 +6,7 @@ export function ShareButton({ title, url }: { title: string; url: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
-    if (navigator.share) {
+    if (navigator.share && navigator.maxTouchPoints > 0) {
       await navigator.share({ title, url });
     } else {
       const input = document.createElement("input");
