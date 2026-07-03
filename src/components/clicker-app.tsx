@@ -25,7 +25,7 @@ export function ClickerApp({ manifest }: { manifest: Manifest; folder: string })
     let active = true;
     const loadAudio = async () => {
       try {
-        const url = `/apps/${manifest.slug}/assets/scream.mp3`;
+        const url = `/apps/${manifest.slug}/assets/scream.wav`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("Audio download failed");
         const arrayBuffer = await res.arrayBuffer();
@@ -70,7 +70,7 @@ export function ClickerApp({ manifest }: { manifest: Manifest; folder: string })
       source.start(0);
     } else {
       // Fallback: simple HTMLAudioElement if Web Audio fails or still loading
-      const fallback = new Audio(`/apps/${manifest.slug}/assets/scream.mp3`);
+      const fallback = new Audio(`/apps/${manifest.slug}/assets/scream.wav`);
       fallback.play().catch(() => {});
     }
 
@@ -156,7 +156,7 @@ export function ClickerApp({ manifest }: { manifest: Manifest; folder: string })
           {clicks}
         </span>
         <span className="text-xs text-muted block mt-4 max-w-[240px] px-4">
-          жми на Серёгиного бомжа, чтобы заставить его орать
+          жми на бомжа, чтобы заставить его орать
         </span>
       </div>
     </div>
