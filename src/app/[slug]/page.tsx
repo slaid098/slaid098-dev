@@ -1,8 +1,12 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { appComponents } from "@/apps/app-components";
 import { AppNav } from "@/components/app-nav";
 import { getAllSlugs, getAppsDir, getNeighbors, readManifest } from "@/lib/manifest";
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://slaid098.dev";
 
@@ -50,13 +54,24 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   }
   const { prev, next } = getNeighbors(slug);
   const AppComponent = appComponents[slug as keyof typeof appComponents];
+  if (!AppComponent) {
+    throw new Error(
+      `Missing app component for "${slug}". Register it in src/apps/app-components.ts`,
+    );
+  }
+
+  const contentPath = join(getAppsDir(), slug, "content.md");
+  if (!existsSync(contentPath)) {
+    throw new Error(`Missing src/apps/${slug}/content.md — required for every app`);
+  }
+  const contentMd = readFileSync(contentPath, "utf-8");
+
   return (
     <>
-      {AppComponent ? (
-        <AppComponent manifest={manifest} folder={`${getAppsDir()}/${slug}`} />
-      ) : (
-        notFound()
-      )}
+      <AppComponent manifest={manifest} folder={`${getAppsDir()}/${slug}`} />
+      <article className="prose-invert mx-auto max-w-2xl px-6 py-12">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{contentMd}</ReactMarkdown>
+      </article>
       <AppNav next={next} prev={prev} />
     </>
   );
