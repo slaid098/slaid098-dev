@@ -1,0 +1,5 @@
+{
+  "entry": [],
+  "project": ["src/**/*.ts", "src/**/*.tsx"],
+  "ignoreDependencies": ["tailwindcss"]
+}
