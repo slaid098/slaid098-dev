@@ -1,5 +1,6 @@
+import { AppNav } from "@/components/app-nav";
 import { getEngine } from "@/engines/registry";
-import { getAllSlugs, getAppsDir, readManifest } from "@/lib/manifest";
+import { getAllSlugs, getAppsDir, getNeighbors, readManifest } from "@/lib/manifest";
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -48,5 +49,11 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     notFound();
   }
   const engine = getEngine(manifest.engine);
-  return engine({ manifest, folder: `${getAppsDir()}/${slug}` });
+  const { prev, next } = getNeighbors(slug);
+  return (
+    <>
+      {engine({ manifest, folder: `${getAppsDir()}/${slug}` })}
+      <AppNav next={next} prev={prev} />
+    </>
+  );
 }

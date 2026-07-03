@@ -58,6 +58,15 @@ export function readAllManifests(): Manifest[] {
     .filter((m): m is Manifest => m !== null);
 }
 
+export function getNeighbors(slug: string): { prev: string | null; next: string | null } {
+  const slugs = getAllSlugs();
+  const index = slugs.indexOf(slug);
+  if (index === -1) return { prev: null, next: null };
+  const prev = index > 0 ? (slugs[index - 1] ?? null) : null;
+  const next = index < slugs.length - 1 ? (slugs[index + 1] ?? null) : null;
+  return { prev, next };
+}
+
 function normalizeManifest(data: Partial<Manifest>, fallbackSlug: string): Manifest {
   const out: Manifest = {
     slug: data.slug ?? fallbackSlug,
