@@ -28,15 +28,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </span>
         </header>
         <main>{children}</main>
-        <footer className="mx-auto max-w-6xl px-6 py-8 text-xs text-muted">
-          сделано вручную ·{" "}
+        <footer className="mx-auto max-w-6xl px-6 py-8 text-xs">
           <a
             href="https://github.com/slaid098/slaid098-dev"
             className="text-accent hover:underline"
             rel="noreferrer"
             target="_blank"
           >
-            открытый код
+            сделано Серёгой
           </a>
         </footer>
         <Analytics />
