@@ -1,1 +1,63 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-base: #0a0a0a;
+  --color-surface: #121212;
+  --color-fg: #ededed;
+  --color-muted: #a1a1aa;
+  --color-line: rgba(255, 255, 255, 0.06);
+  --color-accent: #ccff00;
+}
+
+html,
+body {
+  background-color: var(--color-base);
+  color: var(--color-fg);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizelegibility;
+}
+
+.prose-invert {
+  --tw-prose-body: #d4d4d8;
+  --tw-prose-headings: var(--color-fg);
+  --tw-prose-p: #d4d4d8;
+  --tw-prose-bold: var(--color-fg);
+  --tw-prose-code: var(--color-accent);
+  --tw-prose-pre-bg: #050505;
+  --tw-prose-pre-code: #d4d4d8;
+  --tw-prose-quotes: var(--color-muted);
+  --tw-prose-quote-borders: var(--color-accent);
+  --tw-prose-bullets: #3f3f46;
+  --tw-prose-hr: var(--color-line);
+  --tw-prose-th-borders: rgba(255, 255, 255, 0.12);
+  --tw-prose-td-borders: var(--color-line);
+  --tw-prose-a: var(--color-accent);
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.live-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
+}
