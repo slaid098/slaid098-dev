@@ -4,10 +4,7 @@ import type { Manifest } from "@/lib/manifest";
 import { useEffect, useRef, useState } from "react";
 import styles from "./app.module.css";
 
-export default function HoboApp({
-  manifest,
-  folder: _folder,
-}: { manifest: Manifest; folder: string }) {
+export default function HoboApp({ manifest }: { manifest: Manifest }) {
   const [clicks, setClicks] = useState<number>(0);
   const [isScreaming, setIsScreaming] = useState<boolean>(false);
   const [isExploded, setIsExploded] = useState<boolean>(false);
@@ -26,6 +23,11 @@ export default function HoboApp({
     if (saved) {
       setClicks(Number.parseInt(saved, 10) || 0);
     }
+  }, [manifest.slug]);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = `/apps/${manifest.slug}/assets/hobo-scream.png`;
   }, [manifest.slug]);
 
   useEffect(() => {

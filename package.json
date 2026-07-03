@@ -15,15 +15,12 @@
     "knip": "knip"
   },
   "dependencies": {
-    "@tailwindcss/typography": "^0.5.20",
     "@vercel/analytics": "2.0.1",
     "@vercel/speed-insights": "2.0.0",
     "geist": "^1.7.2",
     "next": "15.5.20",
     "react": "19.2.7",
-    "react-dom": "19.2.7",
-    "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

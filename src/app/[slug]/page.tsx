@@ -1,12 +1,8 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { appComponents } from "@/apps/app-components";
 import { AppNav } from "@/components/app-nav";
-import { getAllSlugs, getAppsDir, getNeighbors, readManifest } from "@/lib/manifest";
+import { getAllSlugs, getNeighbors, readManifest } from "@/lib/manifest";
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://slaid098.dev";
 
@@ -60,18 +56,25 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     );
   }
 
-  const contentPath = join(getAppsDir(), slug, "content.md");
-  if (!existsSync(contentPath)) {
-    throw new Error(`Missing src/apps/${slug}/content.md — required for every app`);
-  }
-  const contentMd = readFileSync(contentPath, "utf-8");
-
   return (
     <>
-      <AppComponent manifest={manifest} folder={`${getAppsDir()}/${slug}`} />
-      <article className="prose-invert mx-auto max-w-2xl px-6 py-12">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{contentMd}</ReactMarkdown>
-      </article>
+      <section className="mx-auto max-w-2xl px-6 pt-16 pb-6 text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight">{manifest.title}</h1>
+        <p className="mt-3 text-lg text-muted">{manifest.description}</p>
+        {manifest.tags && manifest.tags.length > 0 && (
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {manifest.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </section>
+      <AppComponent manifest={manifest} />
       <AppNav next={next} prev={prev} />
     </>
   );
