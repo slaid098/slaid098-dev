@@ -1,5 +1,6 @@
 import { appComponents } from "@/apps/app-components";
 import { AppNav } from "@/components/app-nav";
+import { ShareButton } from "@/components/share-button";
 import { getAllSlugs, getNeighbors, readManifest } from "@/lib/manifest";
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
@@ -75,6 +76,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         )}
       </section>
       <AppComponent manifest={manifest} />
+      <ShareButton title={manifest.title} url={`${baseUrl}/${manifest.slug}`} />
       <AppNav next={next} prev={prev} />
     </>
   );
