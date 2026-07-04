@@ -5,10 +5,10 @@ import {
   pickFunFact,
   pickPersonality,
   pickStyle,
-} from "@/apps/catifyme/prompts";
+} from "@/apps/okoti-menya/prompts";
 import { describe, expect, it } from "vitest";
 
-describe("catifyme prompts", () => {
+describe("okoti-menya prompts", () => {
   it("pickStyle returns non-empty string from STYLES", () => {
     const style = pickStyle();
     expect(typeof style).toBe("string");

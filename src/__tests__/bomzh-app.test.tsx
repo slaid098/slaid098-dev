@@ -85,7 +85,7 @@ describe("BomzhApp", () => {
     expect(screen.getByText("9")).toBeDefined();
     act(() => fireEvent.click(button));
     expect(screen.getByText("БОМЖ ВЗОРВАЛСЯ!")).toBeDefined();
-    expect(mockPlay).toHaveBeenCalledWith("explosion", 1.0);
+    expect(mockPlay).toHaveBeenCalledWith("explosion", 0.5);
     act(() => {
       vi.advanceTimersByTime(5000);
     });

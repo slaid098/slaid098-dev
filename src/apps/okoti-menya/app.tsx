@@ -164,7 +164,7 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `catifyme-${result?.catName ?? "cat"}.jpg`;
+      a.download = `okoti-menya-${result?.catName ?? "cat"}.jpg`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -213,9 +213,6 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
 
       {screen === "hero" && (
         <div className="flex flex-col items-center text-center px-4">
-          <p className="mb-2 text-5xl" aria-hidden="true">
-            🐱
-          </p>
           <p className="mb-8 max-w-sm text-sm text-muted">
             Загрузи селфи — получишь мультяшного кота под свой вайб. Фото обрабатывается на твоём
             устройстве.
