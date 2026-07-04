@@ -27,7 +27,7 @@ export function ShareButton({ title, url }: { title: string; url: string }) {
   };
 
   return (
-    <div className="mx-auto mt-6 sm:mt-10 flex items-center justify-center gap-3">
+    <div className="mx-auto mt-6 mb-12 flex items-center justify-center gap-3 sm:mt-8 sm:mb-16">
       <button
         type="button"
         onClick={handleShare}
