@@ -164,9 +164,6 @@ export default function BomzhApp({ manifest }: { manifest: Manifest }) {
           <span className="text-4xl sm:text-5xl font-extrabold tracking-tight text-accent block mt-1 font-mono">
             {clicks}
           </span>
-          <span className="text-xs text-muted block mt-3 sm:mt-4 max-w-[240px] px-4">
-            жми на бомжа, чтобы заставить его орать
-          </span>
         </div>
       )}
 
