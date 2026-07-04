@@ -1,7 +1,6 @@
 import { appComponents } from "@/apps/app-components";
 import { AppError } from "@/components/app-error";
 import { AppNav } from "@/components/app-nav";
-import { ShareButton } from "@/components/share-button";
 import { type Manifest, getAllSlugs, getNeighbors, readManifest } from "@/lib/manifest";
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
@@ -120,8 +119,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
       <JsonLd manifest={manifest} baseUrl={baseUrl} />
 
-      <ShareButton title={manifest.title} url={`${baseUrl}/${manifest.slug}`} />
-      <AppNav next={next} prev={prev} />
+      <AppNav next={next} prev={prev} title={manifest.title} url={`${baseUrl}/${manifest.slug}`} />
     </>
   );
 }

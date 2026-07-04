@@ -101,7 +101,7 @@ export default function BomzhApp({ manifest }: { manifest: Manifest }) {
   };
 
   return (
-    <div className="flex flex-col items-center select-none py-6 sm:py-12">
+    <div className="relative flex flex-col items-center select-none py-6 sm:py-12">
       <button
         type="button"
         onClick={toggleMute}

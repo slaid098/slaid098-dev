@@ -2,10 +2,22 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export function AppNav({ prev, next }: { prev: string | null; next: string | null }) {
+export function AppNav({
+  prev,
+  next,
+  title,
+  url,
+}: {
+  prev: string | null;
+  next: string | null;
+  title: string;
+  url: string;
+}) {
   const router = useRouter();
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target;
@@ -22,31 +34,69 @@ export function AppNav({ prev, next }: { prev: string | null; next: string | nul
     return () => window.removeEventListener("keydown", onKey);
   }, [prev, next, router]);
 
-  if (prev === null && next === null) return null;
+  const handleShare = async () => {
+    if (navigator.share && navigator.maxTouchPoints > 0) {
+      await navigator.share({ title, url });
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const input = document.createElement("input");
+      input.value = url;
+      input.style.position = "fixed";
+      input.style.opacity = "0";
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const showNav = prev !== null || next !== null;
+
   return (
-    <nav className="sticky bottom-0 z-10 mx-auto flex max-w-2xl items-center justify-between border-t border-line bg-base/80 px-6 py-4 backdrop-blur-sm">
-      {prev !== null ? (
-        <Link
-          aria-label="Предыдущее приложение"
-          href={`/${prev}`}
-          className="text-2xl text-muted transition hover:-translate-x-0.5 hover:text-accent"
-        >
-          ←
-        </Link>
-      ) : (
-        <span />
-      )}
-      {next !== null ? (
-        <Link
-          aria-label="Следующее приложение"
-          href={`/${next}`}
-          className="text-2xl text-muted transition hover:translate-x-0.5 hover:text-accent"
-        >
-          →
-        </Link>
-      ) : (
-        <span />
-      )}
+    <nav className="sticky bottom-0 z-10 border-t border-line bg-base/80 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
+        {prev !== null ? (
+          <Link
+            aria-label="Предыдущее приложение"
+            href={`/${prev}`}
+            className="text-2xl text-muted transition hover:-translate-x-0.5 hover:text-accent"
+          >
+            ←
+          </Link>
+        ) : showNav ? (
+          <span className="w-6" />
+        ) : null}
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleShare}
+            className="rounded-lg border border-line bg-surface px-4 py-2 text-sm font-medium text-muted transition hover:border-accent hover:text-accent"
+          >
+            Поделиться
+          </button>
+          {copied && (
+            <span className="text-sm text-green-500 transition-opacity">Скопировано!</span>
+          )}
+        </div>
+
+        {next !== null ? (
+          <Link
+            aria-label="Следующее приложение"
+            href={`/${next}`}
+            className="text-2xl text-muted transition hover:translate-x-0.5 hover:text-accent"
+          >
+            →
+          </Link>
+        ) : showNav ? (
+          <span className="w-6" />
+        ) : null}
+      </div>
     </nav>
   );
 }
