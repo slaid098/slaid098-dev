@@ -7,7 +7,6 @@ export type Manifest = {
   description: string;
   tags?: string[];
   ogImage?: string;
-  content?: string;
   created?: string;
 };
 
@@ -75,9 +74,6 @@ function normalizeManifest(data: Partial<Manifest>, fallbackSlug: string): Manif
   };
   if (data.ogImage !== undefined) {
     out.ogImage = data.ogImage;
-  }
-  if (data.content !== undefined) {
-    out.content = data.content;
   }
   if (data.created !== undefined) {
     out.created = data.created;
