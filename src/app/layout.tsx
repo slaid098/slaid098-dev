@@ -8,9 +8,25 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import "./globals.css";
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://slaid098.dev";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
   title: "slaid098.dev",
   description: "Микро-приложения на одном домене.",
+  openGraph: {
+    title: "slaid098.dev",
+    description: "Микро-приложения на одном домене.",
+    type: "website",
+    siteName: "slaid098.dev",
+    images: [{ url: "/og-image.png", width: 1024, height: 1024 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "slaid098.dev",
+    description: "Микро-приложения на одном домене.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

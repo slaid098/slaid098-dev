@@ -43,7 +43,7 @@ function svgFallback(slug: string): string {
   const bgFrom = `hsl(${hue}, 65%, 11%)`;
   const bgTo = `hsl(${(hue + 40) % 360}, 65%, 5%)`;
   const ink = `hsl(${hue}, 90%, 68%)`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bgFrom}"/><stop offset="1" stop-color="${bgTo}"/></linearGradient></defs><rect width="1200" height="675" fill="url(#g)"/><text x="600" y="337" font-family="ui-sans-serif, system-ui, sans-serif" font-size="300" font-weight="700" fill="${ink}" text-anchor="middle" dominant-baseline="central">${letter}</text></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bgFrom}"/><stop offset="1" stop-color="${bgTo}"/></linearGradient></defs><rect width="1200" height="630" fill="url(#g)"/><text x="600" y="315" font-family="ui-sans-serif, system-ui, sans-serif" font-size="300" font-weight="700" fill="${ink}" text-anchor="middle" dominant-baseline="central">${letter}</text></svg>`;
 }
 
 function hashHue(s: string): number {

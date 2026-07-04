@@ -1,8 +1,20 @@
 import { readAllManifests } from "@/lib/manifest";
 import Link from "next/link";
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://slaid098.dev";
+
 export default function Home() {
   const apps = readAllManifests();
+  const itemListLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: apps.map((app, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `${baseUrl}/${app.slug}`,
+      name: app.title,
+    })),
+  };
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
       <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
@@ -42,6 +54,10 @@ export default function Home() {
           ))}
         </ul>
       )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+      />
     </div>
   );
 }

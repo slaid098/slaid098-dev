@@ -7,7 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const apps = readAllManifests().map((m) => ({
     url: `${baseUrl}/${m.slug}`,
-    lastModified: now,
+    lastModified: m.created ? new Date(m.created) : now,
     priority: 0.8,
   }));
   return [{ url: baseUrl, lastModified: now, priority: 1 }, ...apps];

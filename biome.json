@@ -34,7 +34,7 @@
   },
   "overrides": [
     {
-      "include": ["src/app/[slug]/page.tsx"],
+      "include": ["src/app/[slug]/page.tsx", "src/app/page.tsx"],
       "linter": {
         "rules": {
           "security": {
