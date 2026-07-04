@@ -50,12 +50,14 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     notFound();
   }
   const { prev, next } = getNeighbors(slug);
+  const isShowcase = manifest.type === "showcase";
   const AppComponent = appComponents[slug as keyof typeof appComponents];
-  if (!AppComponent) {
+  if (!isShowcase && !AppComponent) {
     throw new Error(
       `Missing app component for "${slug}". Register it in src/apps/app-components.ts`,
     );
   }
+  const App = AppComponent as NonNullable<typeof AppComponent>;
 
   return (
     <>
@@ -75,7 +77,41 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           </div>
         )}
       </section>
-      <AppComponent manifest={manifest} />
+
+      {isShowcase ? (
+        <section className="mx-auto max-w-2xl px-6 py-8">
+          {manifest.features && manifest.features.length > 0 && (
+            <div className="mb-10">
+              <h2 className="mb-4 text-center text-sm font-mono uppercase tracking-wider text-muted">
+                возможности
+              </h2>
+              <ul className="space-y-3">
+                {manifest.features.map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-base text-muted">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {manifest.releaseUrl && (
+            <div className="text-center">
+              <a
+                href={manifest.releaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-black transition hover:scale-[1.02]"
+              >
+                Скачать последнюю версию
+              </a>
+            </div>
+          )}
+        </section>
+      ) : (
+        <App manifest={manifest} />
+      )}
+
       <ShareButton title={manifest.title} url={`${baseUrl}/${manifest.slug}`} />
       <AppNav next={next} prev={prev} />
     </>

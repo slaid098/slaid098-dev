@@ -9,6 +9,7 @@ const extToType: Record<string, string> = {
   ".jpeg": "image/jpeg",
   ".webp": "image/webp",
   ".gif": "image/gif",
+  ".svg": "image/svg+xml",
 };
 
 const CACHE_HEADERS = {
