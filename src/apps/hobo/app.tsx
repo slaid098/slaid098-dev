@@ -4,25 +4,40 @@ import type { Manifest } from "@/lib/manifest";
 import { useEffect, useRef, useState } from "react";
 import styles from "./app.module.css";
 
+const EXPLOSION_THRESHOLD = 10;
+const EXPLOSION_DURATION = 5000;
+const SCREAM_MS = 350;
+const FLOAT_ORE_MS = 1000;
+
 export default function HoboApp({ manifest }: { manifest: Manifest }) {
   const [clicks, setClicks] = useState<number>(0);
   const [isScreaming, setIsScreaming] = useState<boolean>(false);
   const [isExploded, setIsExploded] = useState<boolean>(false);
   const [floatingOres, setFloatingOres] = useState<{ id: number; x: number; y: number }[]>([]);
-  const oreIdRef = useRef<number>(0);
 
-  const screamCtxRef = useRef<AudioContext | null>(null);
+  const oreIdRef = useRef<number>(0);
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const screamArrayBufRef = useRef<ArrayBuffer | null>(null);
+  const explosionArrayBufRef = useRef<ArrayBuffer | null>(null);
   const screamBufRef = useRef<AudioBuffer | null>(null);
   const explosionBufRef = useRef<AudioBuffer | null>(null);
 
-  const EXPLOSION_THRESHOLD = 10;
-  const EXPLOSION_DURATION = 5000;
+  const addTimer = (fn: () => void, ms: number): void => {
+    const id = setTimeout(() => {
+      timersRef.current.delete(id);
+      fn();
+    }, ms);
+    timersRef.current.add(id);
+  };
 
   useEffect(() => {
-    const saved = localStorage.getItem(`clicker_${manifest.slug}_count`);
-    if (saved) {
-      setClicks(Number.parseInt(saved, 10) || 0);
-    }
+    const saved = Number.parseInt(
+      localStorage.getItem(`clicker_${manifest.slug}_count`) ?? "0",
+      10,
+    );
+    setClicks(Number.isNaN(saved) || saved >= EXPLOSION_THRESHOLD ? 0 : saved);
   }, [manifest.slug]);
 
   useEffect(() => {
@@ -34,47 +49,60 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
     let active = true;
     const loadAudio = async () => {
       try {
-        const AudioContextClass =
-          window.AudioContext ??
-          (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-        if (!AudioContextClass) return;
-        const ctx = new AudioContextClass();
-        screamCtxRef.current = ctx;
-
         const [screamRes, explosionRes] = await Promise.all([
           fetch(`/apps/${manifest.slug}/assets/scream.mp3`),
           fetch(`/apps/${manifest.slug}/assets/explosion.mp3`),
         ]);
-
-        if (!screamRes.ok) throw new Error("Failed to load scream.mp3");
-        if (!explosionRes.ok) throw new Error("Failed to load explosion.mp3");
-
+        if (!screamRes.ok || !explosionRes.ok) return;
         const [screamAB, explosionAB] = await Promise.all([
           screamRes.arrayBuffer(),
           explosionRes.arrayBuffer(),
         ]);
-
         if (active) {
-          screamBufRef.current = await ctx.decodeAudioData(screamAB);
-          explosionBufRef.current = await ctx.decodeAudioData(explosionAB);
+          screamArrayBufRef.current = screamAB;
+          explosionArrayBufRef.current = explosionAB;
         }
-      } catch (err) {
-        console.error("Failed to load audio:", err);
+      } catch {
+        // audio optional, silent fail
       }
     };
     loadAudio();
     return () => {
       active = false;
-      if (screamCtxRef.current) {
-        screamCtxRef.current.close().catch(() => {});
+      for (const id of timersRef.current) clearTimeout(id);
+      timersRef.current.clear();
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close().catch(() => {});
       }
     };
   }, [manifest.slug]);
 
-  function playBuffer(buf: AudioBuffer | null) {
-    const ctx = screamCtxRef.current;
+  function ensureAudio(): void {
+    if (audioCtxRef.current) {
+      if (audioCtxRef.current.state === "suspended") audioCtxRef.current.resume();
+      return;
+    }
+    const AudioContextClass =
+      window.AudioContext ??
+      (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    audioCtxRef.current = ctx;
+    if (screamArrayBufRef.current && !screamBufRef.current) {
+      ctx.decodeAudioData(screamArrayBufRef.current).then((buf) => {
+        screamBufRef.current = buf;
+      });
+    }
+    if (explosionArrayBufRef.current && !explosionBufRef.current) {
+      ctx.decodeAudioData(explosionArrayBufRef.current).then((buf) => {
+        explosionBufRef.current = buf;
+      });
+    }
+  }
+
+  function playBuffer(buf: AudioBuffer | null): void {
+    const ctx = audioCtxRef.current;
     if (ctx && buf) {
-      if (ctx.state === "suspended") ctx.resume();
       const source = ctx.createBufferSource();
       source.buffer = buf;
       source.connect(ctx.destination);
@@ -84,11 +112,12 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (isExploded) return;
+    ensureAudio();
 
     if (clicks + 1 >= EXPLOSION_THRESHOLD) {
       setIsExploded(true);
       playBuffer(explosionBufRef.current);
-      setTimeout(() => {
+      addTimer(() => {
         setClicks(0);
         setIsExploded(false);
         localStorage.setItem(`clicker_${manifest.slug}_count`, "0");
@@ -103,17 +132,16 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
     localStorage.setItem(`clicker_${manifest.slug}_count`, newCount.toString());
 
     setIsScreaming(true);
-    setTimeout(() => setIsScreaming(false), 350);
+    addTimer(() => setIsScreaming(false), SCREAM_MS);
 
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const newId = oreIdRef.current++;
     setFloatingOres((prev) => [...prev, { id: newId, x, y }]);
-
-    setTimeout(() => {
+    addTimer(() => {
       setFloatingOres((prev) => prev.filter((o) => o.id !== newId));
-    }, 1000);
+    }, FLOAT_ORE_MS);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -166,6 +194,8 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
             <img
               src={`/apps/${manifest.slug}/assets/${isScreaming ? "hobo-scream" : "hobo-regular"}.webp`}
               alt={manifest.title}
+              width={512}
+              height={512}
               className="w-full h-full object-cover"
               draggable={false}
             />
