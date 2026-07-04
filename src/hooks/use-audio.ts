@@ -17,6 +17,7 @@ export function useAudio(slug: string, assets: AudioAssets, storageKey: string):
   const audioCtxRef = useRef<AudioContext | null>(null);
   const arrayBufsRef = useRef<Map<string, ArrayBuffer>>(new Map());
   const audioBufsRef = useRef<Map<string, AudioBuffer>>(new Map());
+  const decodingRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
@@ -64,10 +65,19 @@ export function useAudio(slug: string, assets: AudioAssets, storageKey: string):
     const ctx = new Ctor();
     audioCtxRef.current = ctx;
     for (const [name, ab] of arrayBufsRef.current) {
-      if (!audioBufsRef.current.has(name)) {
-        ctx.decodeAudioData(ab).then((buf) => {
-          audioBufsRef.current.set(name, buf);
-        });
+      if (!audioBufsRef.current.has(name) && !decodingRef.current.has(name)) {
+        decodingRef.current.add(name);
+        ctx
+          .decodeAudioData(ab)
+          .then((buf) => {
+            audioBufsRef.current.set(name, buf);
+          })
+          .catch(() => {
+            // decode failed, will retry on next play attempt
+          })
+          .finally(() => {
+            decodingRef.current.delete(name);
+          });
       }
     }
     return ctx;

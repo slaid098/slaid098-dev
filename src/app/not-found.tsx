@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://slaid098.dev";
-
 export const metadata: Metadata = {
   title: "Страница не найдена",
   description: "Запрашиваемая страница не существует.",
-  alternates: { canonical: "/404" },
   openGraph: {
     title: "Страница не найдена // slaid098.dev",
     description: "Запрашиваемая страница не существует.",
-    url: `${baseUrl}/404`,
   },
   robots: { index: false, follow: true },
 };

@@ -1,9 +1,10 @@
 "use client";
 
 import type { Manifest } from "@/lib/manifest";
-import { useCallback, useRef, useState } from "react";
-import { type CatAnalysis, analyzeSelfie, generateCat, isAbortError } from "./api";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { type CatAnalysis, analyzeSelfie, generateCat, isAbortError, isNetworkError } from "./api";
 import styles from "./app.module.css";
+import { pickFunFact } from "./prompts";
 
 type Screen = "hero" | "preview" | "loading" | "result";
 type LoadingPhase = "analyzing" | "thinking" | "drawing";
@@ -13,6 +14,8 @@ const LOADING_PHASES: { phase: LoadingPhase; text: string }[] = [
   { phase: "thinking", text: "Думаю над характером…" },
   { phase: "drawing", text: "Рисую кота…" },
 ];
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 function readFileAsDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -31,10 +34,29 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
   const [resultImgUrl, setResultImgUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [imgLoading, setImgLoading] = useState<boolean>(false);
+  const [imgError, setImgError] = useState<boolean>(false);
+  const [funFact, setFunFact] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Abort in-flight requests on unmount
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  // Rotate fun facts during loading
+  useEffect(() => {
+    if (screen !== "loading") return;
+    setFunFact(pickFunFact());
+    const id = setInterval(() => {
+      setFunFact((prev) => pickFunFact(prev));
+    }, 3500);
+    return () => clearInterval(id);
+  }, [screen]);
 
   const handleError = useCallback((message: string) => {
     setError(message);
@@ -47,9 +69,14 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
         handleError("Это не изображение. Попробуй другой файл.");
         return;
       }
+      if (file.size > MAX_FILE_SIZE) {
+        handleError("Файл слишком большой (макс 10 МБ).");
+        return;
+      }
       try {
         const dataUrl = await readFileAsDataURL(file);
         setSelfieUrl(dataUrl);
+        setError(null);
         setScreen("preview");
       } catch {
         handleError("Не получилось прочитать файл. Попробуй ещё раз.");
@@ -59,6 +86,7 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
   );
 
   const runAnalysis = useCallback(async () => {
+    if (screen === "loading") return;
     if (!selfieUrl) {
       setScreen("hero");
       return;
@@ -66,11 +94,15 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
     setError(null);
     setResult(null);
     setResultImgUrl(null);
+    setImgError(false);
     setScreen("loading");
     setLoadingPhase("analyzing");
 
+    const ac = new AbortController();
+    abortRef.current = ac;
+
     try {
-      const analysis = await analyzeSelfie(selfieUrl);
+      const analysis = await analyzeSelfie(selfieUrl, ac.signal);
       setLoadingPhase("thinking");
       const imgUrl = await generateCat(analysis.imgPrompt, analysis.catBreed);
       setResult(analysis);
@@ -78,32 +110,51 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
       setImgLoading(true);
       setScreen("result");
     } catch (err) {
-      if (isAbortError(err)) return;
+      if (isAbortError(err)) {
+        setScreen("preview");
+        return;
+      }
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes("vision-http-429")) {
         handleError("Слишком много запросов. Подожди минуту и попробуй снова.");
       } else if (msg.includes("vision-http-5")) {
         handleError("AI-сервер лёг. Попробуй через минуту.");
+      } else if (msg.includes("vision-bad-response")) {
+        handleError("AI вернул ерунду. Попробуй ещё раз.");
       } else if (msg.includes("Incomplete") || msg.includes("Empty")) {
         handleError("AI не смог разобрать фото. Попробуй другое селфи.");
-      } else if (msg.includes("Failed to fetch") || msg.includes("network")) {
+      } else if (isNetworkError(err)) {
         handleError("Сетевая ошибка. Проверь интернет.");
       } else {
         handleError("Кот не нарисовался. Попробуй ещё раз.");
       }
+    } finally {
+      abortRef.current = null;
     }
-  }, [selfieUrl, handleError]);
+  }, [screen, selfieUrl, handleError]);
 
   const handleReset = useCallback(() => {
     abortRef.current?.abort();
+    abortRef.current = null;
     setSelfieUrl(null);
     setResult(null);
     setResultImgUrl(null);
     setError(null);
+    setImgError(false);
     setScreen("hero");
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   }, []);
+
+  const handleRetryImage = useCallback(() => {
+    if (!resultImgUrl) return;
+    setImgError(false);
+    setImgLoading(true);
+    // Force reload by appending cache-buster
+    const separator = resultImgUrl.includes("?") ? "&" : "?";
+    const newUrl = `${resultImgUrl}${separator}_retry=${Date.now()}`;
+    setResultImgUrl(newUrl);
+  }, [resultImgUrl]);
 
   const handleDownload = useCallback(async () => {
     if (!resultImgUrl) return;
@@ -123,6 +174,8 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
     }
   }, [resultImgUrl, result?.catName]);
 
+  const isLoading = screen === "loading";
+
   return (
     <div className="flex flex-col items-center py-6 sm:py-10">
       <input
@@ -130,6 +183,7 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
         type="file"
         accept="image/*"
         hidden
+        aria-label="Загрузить селфи с устройства"
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) void handleFile(file);
@@ -141,6 +195,7 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
         accept="image/*"
         capture="user"
         hidden
+        aria-label="Сделать селфи с камеры"
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) void handleFile(file);
@@ -148,7 +203,10 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
       />
 
       {error && (
-        <div className="mx-auto mb-6 max-w-md rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-400">
+        <div
+          role="alert"
+          className="mx-auto mb-6 max-w-md rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-400"
+        >
           {error}
         </div>
       )}
@@ -189,15 +247,22 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
           <div className="flex gap-3 w-full max-w-xs">
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                  fileInputRef.current.click();
+                }
+              }}
               className="flex-1 rounded-lg border border-line bg-surface px-4 py-3 text-sm font-medium text-muted transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              Другое
+              Выбрать другое
             </button>
             <button
               type="button"
               onClick={() => void runAnalysis()}
-              className="flex-1 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-black transition hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              disabled={isLoading}
+              aria-busy={isLoading}
+              className="flex-1 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-black transition hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:hover:scale-100"
             >
               Создать кота
             </button>
@@ -206,23 +271,37 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
       )}
 
       {screen === "loading" && (
-        <div className="flex flex-col items-center px-4 py-16">
+        <output className="flex flex-col items-center px-4 py-16" aria-live="polite">
           <div className="mb-6 flex gap-3 text-3xl" aria-hidden="true">
             <span className={`${styles.paw} ${styles.pawDelay1}`}>🐾</span>
             <span className={`${styles.paw} ${styles.pawDelay2}`}>🐾</span>
             <span className={`${styles.paw} ${styles.pawDelay3}`}>🐾</span>
           </div>
-          <p className="text-base text-muted" aria-live="polite">
+          <p className="text-base text-muted">
             {LOADING_PHASES.find((p) => p.phase === loadingPhase)?.text ?? "Анализирую селфи…"}
           </p>
-          <p className="mt-3 text-xs text-muted/60">AI думает, это может занять ~30 секунд</p>
-        </div>
+          {funFact && (
+            <p
+              key={funFact}
+              className={`mt-4 max-w-sm text-center text-sm text-muted/70 ${styles.funFact}`}
+            >
+              {funFact}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={handleReset}
+            className="mt-8 rounded-lg border border-line bg-surface px-4 py-2 text-xs font-medium text-muted transition hover:border-red-500/50 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Отмена
+          </button>
+        </output>
       )}
 
       {screen === "result" && result && resultImgUrl && (
         <div className={`flex flex-col items-center px-4 ${styles.fadeInUp}`}>
           <div className="relative mb-6 overflow-hidden rounded-xl border border-line">
-            {imgLoading && (
+            {imgLoading && !imgError && (
               <div className="absolute inset-0 flex items-center justify-center bg-surface">
                 <div className="flex gap-2 text-2xl" aria-hidden="true">
                   <span className={`${styles.paw} ${styles.pawDelay1}`}>🐾</span>
@@ -231,13 +310,31 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
                 </div>
               </div>
             )}
-            <img
-              src={resultImgUrl}
-              alt={`Кот ${result.catName}`}
-              className="max-h-96 max-w-full object-contain"
-              onLoad={() => setImgLoading(false)}
-              onError={() => setImgLoading(false)}
-            />
+            {imgError ? (
+              <div className="flex aspect-square max-h-96 max-w-full items-center justify-center bg-surface text-center">
+                <div>
+                  <p className="mb-3 text-sm text-muted">Картинка не загрузилась</p>
+                  <button
+                    type="button"
+                    onClick={handleRetryImage}
+                    className="rounded-lg border border-line px-4 py-2 text-xs font-medium text-muted transition hover:border-accent hover:text-accent"
+                  >
+                    Повторить
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <img
+                src={resultImgUrl}
+                alt={`Кот по кличке ${result.catName}, порода ${result.catBreed}. ${result.personality}`}
+                className="max-h-96 max-w-full object-contain"
+                onLoad={() => setImgLoading(false)}
+                onError={() => {
+                  setImgLoading(false);
+                  setImgError(true);
+                }}
+              />
+            )}
           </div>
 
           <div className="mb-6 max-w-md text-center">
@@ -260,7 +357,7 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
             <button
               type="button"
               onClick={() => void handleDownload()}
-              disabled={imgLoading}
+              disabled={imgLoading || imgError}
               className="flex-1 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-black transition hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               Скачать
