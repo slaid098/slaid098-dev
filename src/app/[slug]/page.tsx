@@ -59,9 +59,9 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
   return (
     <>
-      <section className="mx-auto max-w-2xl px-6 pt-16 pb-6 text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight">{manifest.title}</h1>
-        <p className="mt-3 text-lg text-muted">{manifest.description}</p>
+      <section className="mx-auto max-w-2xl px-6 pt-10 pb-4 sm:pt-16 sm:pb-6 text-center">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{manifest.title}</h1>
+        <p className="mt-2 sm:mt-3 text-base sm:text-lg text-muted">{manifest.description}</p>
         {manifest.tags && manifest.tags.length > 0 && (
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             {manifest.tags.map((tag) => (
