@@ -21,10 +21,10 @@ export function generateMetadata(
     if (m === null) return {};
     const ogImage =
       m.ogImage === undefined
-        ? undefined
+        ? `${baseUrl}/apps/${m.slug}/cover`
         : m.ogImage.startsWith("http")
           ? m.ogImage
-          : `${baseUrl}/apps/${m.slug}/cover`;
+          : `${baseUrl}/apps/${m.slug}/assets/${m.ogImage}`;
     return {
       title: m.title,
       description: m.description,
@@ -32,13 +32,16 @@ export function generateMetadata(
       openGraph: {
         title: `${m.title} // slaid098.dev`,
         description: m.description,
-        images: ogImage !== undefined ? [{ url: ogImage }] : undefined,
+        type: "website",
+        locale: "ru_RU",
+        url: `${baseUrl}/${m.slug}`,
+        images: [{ url: ogImage }],
       },
       twitter: {
         card: "summary_large_image",
         title: `${m.title} // slaid098.dev`,
         description: m.description,
-        images: ogImage !== undefined ? [ogImage] : undefined,
+        images: [ogImage],
       },
     };
   });
@@ -129,20 +132,27 @@ function JsonLd({ manifest, baseUrl }: { manifest: Manifest; baseUrl: string }) 
     ? {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
+        "@id": `${baseUrl}/${manifest.slug}`,
         name: manifest.title,
         description: manifest.description,
         applicationCategory: "MultimediaApplication",
-        operatingSystem: "Windows",
+        operatingSystem: "Cross",
+        url: `${baseUrl}/${manifest.slug}`,
         downloadUrl: manifest.releaseUrl,
+        image: `${baseUrl}/apps/${manifest.slug}/cover`,
+        author: { "@type": "Person", name: "Sergey" },
         offers: { "@type": "Offer", price: "0", priceCurrency: "RUB" },
       }
     : {
         "@context": "https://schema.org",
         "@type": "WebApplication",
+        "@id": `${baseUrl}/${manifest.slug}`,
         name: manifest.title,
         description: manifest.description,
         applicationCategory: "GameApplication",
         url: `${baseUrl}/${manifest.slug}`,
+        image: `${baseUrl}/apps/${manifest.slug}/cover`,
+        author: { "@type": "Person", name: "Sergey" },
         offers: { "@type": "Offer", price: "0", priceCurrency: "RUB" },
       };
   return (

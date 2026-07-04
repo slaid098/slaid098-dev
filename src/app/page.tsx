@@ -1,7 +1,12 @@
 import { readAllManifests } from "@/lib/manifest";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://slaid098.dev";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function Home() {
   const apps = readAllManifests();
@@ -14,6 +19,22 @@ export default function Home() {
       url: `${baseUrl}/${app.slug}`,
       name: app.title,
     })),
+  };
+  const websiteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": baseUrl,
+    name: "slaid098.dev",
+    url: baseUrl,
+    description: "Утилиты для автоматизации и цифровые эксперименты.",
+    inLanguage: "ru-RU",
+  };
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": `${baseUrl}#person`,
+    name: "Sergey",
+    url: baseUrl,
   };
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
@@ -57,6 +78,14 @@ export default function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}
       />
     </div>
   );
