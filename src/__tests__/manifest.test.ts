@@ -9,12 +9,12 @@ import type { Manifest } from "@/lib/manifest";
 import { describe, expect, it } from "vitest";
 
 describe("apps manifests", () => {
-  it("includes hobo slug", () => {
-    expect(getAllSlugs()).toContain("hobo");
+  it("includes bomzh slug", () => {
+    expect(getAllSlugs()).toContain("bomzh");
   });
 
-  it("reads hobo manifest", () => {
-    const m = readManifest("hobo");
+  it("reads bomzh manifest", () => {
+    const m = readManifest("bomzh");
     expect(m).not.toBeNull();
     expect(m?.title).toBe("Бомж");
     expect(m?.created).toBe("2026-07-04");
@@ -23,7 +23,7 @@ describe("apps manifests", () => {
   it("returns all manifests", () => {
     const all = readAllManifests();
     expect(all.length).toBeGreaterThan(0);
-    expect(all.some((m) => m.slug === "hobo")).toBe(true);
+    expect(all.some((m) => m.slug === "bomzh")).toBe(true);
   });
 
   it("returns null for missing slug", () => {
@@ -31,7 +31,7 @@ describe("apps manifests", () => {
   });
 
   it("returns null neighbors for single app", () => {
-    const { prev, next } = getNeighbors("hobo");
+    const { prev, next } = getNeighbors("bomzh");
     expect(prev).toBeNull();
     expect(next).toBeNull();
   });

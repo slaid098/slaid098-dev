@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 describe("cover route", () => {
   it("returns cover.webp when file exists", async () => {
-    const ctx = { params: Promise.resolve({ slug: "hobo" }) };
+    const ctx = { params: Promise.resolve({ slug: "bomzh" }) };
     const r = await GET(new Request("https://x/"), ctx);
     expect(r.headers.get("Content-Type")).toBe("image/webp");
     expect(r.status).toBe(200);
@@ -21,7 +21,7 @@ describe("cover route", () => {
 
   it("produces different svg for different slugs", async () => {
     const a = await GET(new Request("https://x/"), {
-      params: Promise.resolve({ slug: "hobo" }),
+      params: Promise.resolve({ slug: "bomzh" }),
     });
     const b = await GET(new Request("https://x/"), {
       params: Promise.resolve({ slug: "other-slug" }),

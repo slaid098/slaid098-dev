@@ -5,12 +5,11 @@ import { getAppsDir } from "@/lib/manifest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 describe("assets route", () => {
-  const hoboDir = join(getAppsDir(), "hobo");
-  const testFile = join(hoboDir, "testasset.txt");
+  const bomzhDir = join(getAppsDir(), "bomzh");
+  const testFile = join(bomzhDir, "testasset.txt");
 
   beforeAll(() => {
-    // Create test file if hobo dir exists
-    if (existsSync(hoboDir)) {
+    if (existsSync(bomzhDir)) {
       writeFileSync(testFile, "hello assets");
     }
   });
@@ -22,8 +21,8 @@ describe("assets route", () => {
   });
 
   it("serves asset file with correct content type", async () => {
-    if (!existsSync(hoboDir)) return; // skip if hobo dir somehow not created yet
-    const ctx = { params: Promise.resolve({ slug: "hobo", file: ["testasset.txt"] }) };
+    if (!existsSync(bomzhDir)) return;
+    const ctx = { params: Promise.resolve({ slug: "bomzh", file: ["testasset.txt"] }) };
     const res = await GET(new Request("https://x/"), ctx);
     expect(res.status).toBe(200);
     expect(await res.text()).toBe("hello assets");
@@ -31,14 +30,14 @@ describe("assets route", () => {
   });
 
   it("returns 404 for missing file", async () => {
-    const ctx = { params: Promise.resolve({ slug: "hobo", file: ["doesnotexist.txt"] }) };
+    const ctx = { params: Promise.resolve({ slug: "bomzh", file: ["doesnotexist.txt"] }) };
     const res = await GET(new Request("https://x/"), ctx);
     expect(res.status).toBe(404);
   });
 
   it("returns 403 for directory traversal attempt", async () => {
     const ctx = {
-      params: Promise.resolve({ slug: "hobo", file: ["..", "cucumber", "manifest.json"] }),
+      params: Promise.resolve({ slug: "bomzh", file: ["..", "cucumber", "manifest.json"] }),
     };
     const res = await GET(new Request("https://x/"), ctx);
     expect(res.status).toBe(403);
