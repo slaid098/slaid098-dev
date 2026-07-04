@@ -1,6 +1,6 @@
 {
-  "slug": "youtube",
-  "title": "YouTube Downloader",
+  "slug": "yt-video-downloader",
+  "title": "YouTube Video Downloader",
   "description": "Скачивай YouTube видео по списку URL. H.264, до 1080p.",
   "tags": ["утилиты"],
   "type": "showcase",

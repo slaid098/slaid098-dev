@@ -36,13 +36,13 @@ describe("apps manifests", () => {
   it("returns correct neighbors in multi-app ordering", () => {
     const bomzh = getNeighbors("bomzh");
     const catifyme = getNeighbors("catifyme");
-    const youtube = getNeighbors("youtube");
+    const ytVideoDownloader = getNeighbors("yt-video-downloader");
     expect(bomzh.prev).toBeNull();
     expect(bomzh.next).toBe("catifyme");
     expect(catifyme.prev).toBe("bomzh");
-    expect(catifyme.next).toBe("youtube");
-    expect(youtube.prev).toBe("catifyme");
-    expect(youtube.next).toBeNull();
+    expect(catifyme.next).toBe("yt-video-downloader");
+    expect(ytVideoDownloader.prev).toBe("catifyme");
+    expect(ytVideoDownloader.next).toBeNull();
   });
 
   it("returns null neighbors for unknown slug", () => {

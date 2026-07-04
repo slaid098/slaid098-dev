@@ -16,6 +16,11 @@ const nextConfig: NextConfig = {
         destination: "/bomzh/:path*",
         permanent: true,
       },
+      {
+        source: "/youtube",
+        destination: "/yt-video-downloader",
+        permanent: true,
+      },
     ];
   },
 };
