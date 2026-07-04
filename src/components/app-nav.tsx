@@ -58,30 +58,30 @@ export function AppNav({
   const showNav = prev !== null || next !== null;
 
   return (
-    <nav className="sticky bottom-0 z-10 border-t border-line bg-base/80 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
+    <nav className="sticky bottom-0 z-10 border-t border-line bg-base/90 shadow-[0_-4px_20px_-8px_rgba(0,0,0,0.5)] backdrop-blur-md">
+      <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-3">
         {prev !== null ? (
           <Link
             aria-label="Предыдущее приложение"
             href={`/${prev}`}
-            className="text-2xl text-muted transition hover:-translate-x-0.5 hover:text-accent"
+            className="text-xl text-muted transition hover:-translate-x-0.5 hover:text-accent"
           >
             ←
           </Link>
         ) : showNav ? (
-          <span className="w-6" />
+          <span className="w-5" />
         ) : null}
 
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={handleShare}
-            className="rounded-lg border border-line bg-surface px-4 py-2 text-sm font-medium text-muted transition hover:border-accent hover:text-accent"
+            className="rounded-lg border border-line bg-surface px-4 py-1.5 text-xs font-medium text-muted transition hover:border-accent hover:text-accent"
           >
             Поделиться
           </button>
           {copied && (
-            <span className="text-sm text-green-500 transition-opacity">Скопировано!</span>
+            <span className="text-xs text-green-500 transition-opacity">Скопировано!</span>
           )}
         </div>
 
@@ -89,12 +89,12 @@ export function AppNav({
           <Link
             aria-label="Следующее приложение"
             href={`/${next}`}
-            className="text-2xl text-muted transition hover:translate-x-0.5 hover:text-accent"
+            className="text-xl text-muted transition hover:translate-x-0.5 hover:text-accent"
           >
             →
           </Link>
         ) : showNav ? (
-          <span className="w-6" />
+          <span className="w-5" />
         ) : null}
       </div>
     </nav>
