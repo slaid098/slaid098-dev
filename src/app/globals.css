@@ -24,23 +24,6 @@ body {
   text-rendering: optimizelegibility;
 }
 
-.prose-invert {
-  --tw-prose-body: #d4d4d8;
-  --tw-prose-headings: var(--color-fg);
-  --tw-prose-p: #d4d4d8;
-  --tw-prose-bold: var(--color-fg);
-  --tw-prose-code: var(--color-accent);
-  --tw-prose-pre-bg: #050505;
-  --tw-prose-pre-code: #d4d4d8;
-  --tw-prose-quotes: var(--color-muted);
-  --tw-prose-quote-borders: var(--color-accent);
-  --tw-prose-bullets: #3f3f46;
-  --tw-prose-hr: var(--color-line);
-  --tw-prose-th-borders: rgba(255, 255, 255, 0.12);
-  --tw-prose-td-borders: var(--color-line);
-  --tw-prose-a: var(--color-accent);
-}
-
 @keyframes pulse-dot {
   0%,
   100% {
