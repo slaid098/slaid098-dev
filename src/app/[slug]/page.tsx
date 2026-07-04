@@ -1,7 +1,8 @@
 import { appComponents } from "@/apps/app-components";
+import { AppError } from "@/components/app-error";
 import { AppNav } from "@/components/app-nav";
 import { ShareButton } from "@/components/share-button";
-import { getAllSlugs, getNeighbors, readManifest } from "@/lib/manifest";
+import { type Manifest, getAllSlugs, getNeighbors, readManifest } from "@/lib/manifest";
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -109,11 +110,42 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           )}
         </section>
       ) : (
-        <App manifest={manifest} />
+        <AppError title={manifest.title}>
+          <App manifest={manifest} />
+        </AppError>
       )}
+
+      <JsonLd manifest={manifest} baseUrl={baseUrl} />
 
       <ShareButton title={manifest.title} url={`${baseUrl}/${manifest.slug}`} />
       <AppNav next={next} prev={prev} />
     </>
+  );
+}
+
+function JsonLd({ manifest, baseUrl }: { manifest: Manifest; baseUrl: string }) {
+  const isShowcase = manifest.type === "showcase";
+  const data = isShowcase
+    ? {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: manifest.title,
+        description: manifest.description,
+        applicationCategory: "MultimediaApplication",
+        operatingSystem: "Windows",
+        downloadUrl: manifest.releaseUrl,
+        offers: { "@type": "Offer", price: "0", priceCurrency: "RUB" },
+      }
+    : {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: manifest.title,
+        description: manifest.description,
+        applicationCategory: "GameApplication",
+        url: `${baseUrl}/${manifest.slug}`,
+        offers: { "@type": "Offer", price: "0", priceCurrency: "RUB" },
+      };
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
   );
 }
