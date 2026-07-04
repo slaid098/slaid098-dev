@@ -12,7 +12,10 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://slaid098.dev";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
-  title: "Лаборатория Slade // slaid098.dev",
+  title: {
+    default: "Лаборатория Slade // slaid098.dev",
+    template: "%s // slaid098.dev",
+  },
   description: "Утилиты для автоматизации и цифровые эксперименты.",
   openGraph: {
     title: "Лаборатория Slade // slaid098.dev",

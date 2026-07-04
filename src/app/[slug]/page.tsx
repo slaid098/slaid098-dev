@@ -30,13 +30,13 @@ export function generateMetadata(
       description: m.description,
       alternates: { canonical: `/${m.slug}` },
       openGraph: {
-        title: m.title,
+        title: `${m.title} // slaid098.dev`,
         description: m.description,
         images: ogImage !== undefined ? [{ url: ogImage }] : undefined,
       },
       twitter: {
         card: "summary_large_image",
-        title: m.title,
+        title: `${m.title} // slaid098.dev`,
         description: m.description,
         images: ogImage !== undefined ? [ogImage] : undefined,
       },
