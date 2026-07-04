@@ -36,12 +36,15 @@ describe("apps manifests", () => {
   it("returns correct neighbors in multi-app ordering", () => {
     const bomzh = getNeighbors("bomzh");
     const catifyme = getNeighbors("catifyme");
+    const takeBreak = getNeighbors("take-break");
     const ytVideoDownloader = getNeighbors("yt-video-downloader");
     expect(bomzh.prev).toBeNull();
     expect(bomzh.next).toBe("catifyme");
     expect(catifyme.prev).toBe("bomzh");
-    expect(catifyme.next).toBe("yt-video-downloader");
-    expect(ytVideoDownloader.prev).toBe("catifyme");
+    expect(catifyme.next).toBe("take-break");
+    expect(takeBreak.prev).toBe("catifyme");
+    expect(takeBreak.next).toBe("yt-video-downloader");
+    expect(ytVideoDownloader.prev).toBe("take-break");
     expect(ytVideoDownloader.next).toBeNull();
   });
 

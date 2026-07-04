@@ -1,0 +1,17 @@
+{
+  "slug": "take-break",
+  "title": "Take Break",
+  "description": "Дисциплина в работе, свобода в отдыхе.",
+  "tags": ["утилиты"],
+  "type": "showcase",
+  "releaseUrl": "https://github.com/slaid098/take_break/releases",
+  "features": [
+    "Перерыв пропустить нельзя",
+    "Два режима: Помодоро (25 мин) и Стандартный (45 мин)",
+    "Блокирующий fullscreen overlay",
+    "Онлайн-обои при каждом перерыве",
+    "Автозапуск с Windows",
+    "Фокус на следующую сессию"
+  ],
+  "created": "2026-07-04"
+}
