@@ -74,7 +74,7 @@ export default function Home() {
                       {app.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-md border border-line px-2 py-0.5 font-mono text-xs text-muted"
+                          className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent"
                         >
                           {tag}
                         </span>
