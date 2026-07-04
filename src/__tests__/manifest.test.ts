@@ -1,12 +1,15 @@
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   byCreated,
   getAllSlugs,
+  getAppsDir,
   getNeighbors,
   readAllManifests,
   readManifest,
 } from "@/lib/manifest";
 import type { Manifest } from "@/lib/manifest";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 describe("apps manifests", () => {
   it("includes bomzh slug", () => {
@@ -46,6 +49,44 @@ describe("apps manifests", () => {
   });
 });
 
+describe("manifest edge cases", () => {
+  const tmpDir = join(getAppsDir(), "__tmp_test_app");
+  const manifestFile = join(tmpDir, "manifest.json");
+
+  function writeTmpManifest(content: string): void {
+    mkdirSync(tmpDir, { recursive: true });
+    writeFileSync(manifestFile, content);
+  }
+
+  function removeTmpDir(): void {
+    rmSync(tmpDir, { recursive: true, force: true });
+  }
+
+  afterEach(() => {
+    removeTmpDir();
+  });
+
+  it("returns null for invalid JSON manifest", () => {
+    writeTmpManifest("{ not valid json");
+    expect(readManifest("__tmp_test_app")).toBeNull();
+  });
+
+  it("normalizes empty manifest with defaults", () => {
+    writeTmpManifest("{}");
+    const m = readManifest("__tmp_test_app");
+    expect(m).not.toBeNull();
+    expect(m?.slug).toBe("__tmp_test_app");
+    expect(m?.title).toBe("");
+    expect(m?.description).toBe("");
+    expect(m?.tags).toEqual([]);
+  });
+
+  it("returns null for empty manifest file", () => {
+    writeTmpManifest("");
+    expect(readManifest("__tmp_test_app")).toBeNull();
+  });
+});
+
 describe("byCreated sort", () => {
   const m = (slug: string, created?: string): Manifest => {
     const out: Manifest = { slug, title: slug, description: "" };
@@ -70,6 +111,12 @@ describe("byCreated sort", () => {
   it("tie-breaks by slug when dates equal", () => {
     const a = m("b", "2026-07-03");
     const b = m("a", "2026-07-03");
+    expect([a, b].sort(byCreated)).toEqual([b, a]);
+  });
+
+  it("tie-breaks by slug when both missing created", () => {
+    const a = m("z");
+    const b = m("a");
     expect([a, b].sort(byCreated)).toEqual([b, a]);
   });
 });

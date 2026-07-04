@@ -1,4 +1,7 @@
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { GET } from "@/app/apps/[slug]/cover/route";
+import { getAppsDir } from "@/lib/manifest";
 import { describe, expect, it } from "vitest";
 
 describe("cover route", () => {
@@ -30,5 +33,21 @@ describe("cover route", () => {
     const bType = b.headers.get("Content-Type");
     expect(aType).toBe("image/webp");
     expect(bType).toBe("image/svg+xml");
+  });
+
+  it("sanitizes XSS in title via firstLetter", async () => {
+    const tmpDir = join(getAppsDir(), "__tmp_xss_test");
+    const manifestFile = join(tmpDir, "manifest.json");
+    mkdirSync(tmpDir, { recursive: true });
+    writeFileSync(manifestFile, JSON.stringify({ title: "<script>alert(1)</script>" }));
+    try {
+      const ctx = { params: Promise.resolve({ slug: "__tmp_xss_test" }) };
+      const r = await GET(new Request("https://x/"), ctx);
+      const svg = await r.text();
+      expect(svg).not.toContain("<script");
+      expect(svg).not.toContain("alert");
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
   });
 });
