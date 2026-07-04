@@ -1,7 +1,8 @@
 "use client";
 
+import { useAudio } from "@/hooks/use-audio";
 import type { Manifest } from "@/lib/manifest";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./app.module.css";
 
 const EXPLOSION_THRESHOLD = 10;
@@ -9,7 +10,12 @@ const EXPLOSION_DURATION = 5000;
 const SCREAM_MS = 350;
 const FLOAT_ORE_MS = 1000;
 
-export default function HoboApp({ manifest }: { manifest: Manifest }) {
+const AUDIO_ASSETS = {
+  scream: "scream.mp3",
+  explosion: "explosion.mp3",
+} as const;
+
+export default function BomzhApp({ manifest }: { manifest: Manifest }) {
   const [clicks, setClicks] = useState<number>(0);
   const [isScreaming, setIsScreaming] = useState<boolean>(false);
   const [isExploded, setIsExploded] = useState<boolean>(false);
@@ -18,19 +24,15 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
   const oreIdRef = useRef<number>(0);
   const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const screamArrayBufRef = useRef<ArrayBuffer | null>(null);
-  const explosionArrayBufRef = useRef<ArrayBuffer | null>(null);
-  const screamBufRef = useRef<AudioBuffer | null>(null);
-  const explosionBufRef = useRef<AudioBuffer | null>(null);
+  const { play, muted, toggleMute } = useAudio(manifest.slug, AUDIO_ASSETS, "clicker_bomzh_muted");
 
-  const addTimer = (fn: () => void, ms: number): void => {
+  const addTimer = useCallback((fn: () => void, ms: number): void => {
     const id = setTimeout(() => {
       timersRef.current.delete(id);
       fn();
     }, ms);
     timersRef.current.add(id);
-  };
+  }, []);
 
   useEffect(() => {
     const saved = Number.parseInt(
@@ -46,77 +48,18 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
   }, [manifest.slug]);
 
   useEffect(() => {
-    let active = true;
-    const loadAudio = async () => {
-      try {
-        const [screamRes, explosionRes] = await Promise.all([
-          fetch(`/apps/${manifest.slug}/assets/scream.mp3`),
-          fetch(`/apps/${manifest.slug}/assets/explosion.mp3`),
-        ]);
-        if (!screamRes.ok || !explosionRes.ok) return;
-        const [screamAB, explosionAB] = await Promise.all([
-          screamRes.arrayBuffer(),
-          explosionRes.arrayBuffer(),
-        ]);
-        if (active) {
-          screamArrayBufRef.current = screamAB;
-          explosionArrayBufRef.current = explosionAB;
-        }
-      } catch {
-        // audio optional, silent fail
-      }
-    };
-    loadAudio();
     return () => {
-      active = false;
       for (const id of timersRef.current) clearTimeout(id);
       timersRef.current.clear();
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close().catch(() => {});
-      }
     };
-  }, [manifest.slug]);
-
-  function ensureAudio(): void {
-    if (audioCtxRef.current) {
-      if (audioCtxRef.current.state === "suspended") audioCtxRef.current.resume();
-      return;
-    }
-    const AudioContextClass =
-      window.AudioContext ??
-      (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioContextClass) return;
-    const ctx = new AudioContextClass();
-    audioCtxRef.current = ctx;
-    if (screamArrayBufRef.current && !screamBufRef.current) {
-      ctx.decodeAudioData(screamArrayBufRef.current).then((buf) => {
-        screamBufRef.current = buf;
-      });
-    }
-    if (explosionArrayBufRef.current && !explosionBufRef.current) {
-      ctx.decodeAudioData(explosionArrayBufRef.current).then((buf) => {
-        explosionBufRef.current = buf;
-      });
-    }
-  }
-
-  function playBuffer(buf: AudioBuffer | null): void {
-    const ctx = audioCtxRef.current;
-    if (ctx && buf) {
-      const source = ctx.createBufferSource();
-      source.buffer = buf;
-      source.connect(ctx.destination);
-      source.start(0);
-    }
-  }
+  }, []);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (isExploded) return;
-    ensureAudio();
 
     if (clicks + 1 >= EXPLOSION_THRESHOLD) {
       setIsExploded(true);
-      playBuffer(explosionBufRef.current);
+      play("explosion", 1.0);
       addTimer(() => {
         setClicks(0);
         setIsExploded(false);
@@ -125,7 +68,7 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
       return;
     }
 
-    playBuffer(screamBufRef.current);
+    play("scream", 0.4);
 
     const newCount = clicks + 1;
     setClicks(newCount);
@@ -159,6 +102,16 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
 
   return (
     <div className="flex flex-col items-center select-none py-6 sm:py-12">
+      <button
+        type="button"
+        onClick={toggleMute}
+        aria-label={muted ? "Включить звук" : "Выключить звук"}
+        aria-pressed={muted}
+        className="absolute right-4 top-4 text-2xl text-muted hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
+        {muted ? "🔇" : "🔊"}
+      </button>
+
       <button
         type="button"
         onClick={handleClick}
