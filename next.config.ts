@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
         destination: "/yt-video-downloader",
         permanent: true,
       },
+      {
+        source: "/take_break",
+        destination: "/take-break",
+        permanent: true,
+      },
     ];
   },
 };
