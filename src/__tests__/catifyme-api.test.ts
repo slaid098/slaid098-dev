@@ -7,7 +7,7 @@ import {
   isAbortError,
   isNetworkError,
   normalizeImageToJPEG,
-} from "@/apps/catifyme/api";
+} from "@/apps/okoti-menya/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const validJsonResponse = (data: Record<string, unknown>) => ({
@@ -86,7 +86,7 @@ function mockFetchForDataUrl() {
   );
 }
 
-describe("catifyme api", () => {
+describe("okoti-menya api", () => {
   beforeEach(() => {
     mockImageLoaded();
     mockCanvas();

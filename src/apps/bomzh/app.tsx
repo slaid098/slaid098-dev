@@ -59,7 +59,7 @@ export default function BomzhApp({ manifest }: { manifest: Manifest }) {
 
     if (clicks + 1 >= EXPLOSION_THRESHOLD) {
       setIsExploded(true);
-      play("explosion", 1.0);
+      play("explosion", 0.5);
       addTimer(() => {
         setClicks(0);
         setIsExploded(false);

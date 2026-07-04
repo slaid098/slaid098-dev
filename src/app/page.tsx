@@ -69,6 +69,18 @@ export default function Home() {
                   )}
                   <h2 className="mb-1 line-clamp-1 text-lg font-medium">{app.title}</h2>
                   <p className="line-clamp-2 text-sm text-muted">{app.description}</p>
+                  {app.tags !== undefined && app.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {app.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-md border border-line px-2 py-0.5 font-mono text-xs text-muted"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </Link>
             </li>

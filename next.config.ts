@@ -26,6 +26,11 @@ const nextConfig: NextConfig = {
         destination: "/take-break",
         permanent: true,
       },
+      {
+        source: "/catifyme",
+        destination: "/okoti-menya",
+        permanent: true,
+      },
     ];
   },
 };

@@ -4,5 +4,5 @@ import type { ComponentType } from "react";
 
 export const appComponents: Record<string, ComponentType<{ manifest: Manifest }>> = {
   bomzh: dynamic(() => import("./bomzh/app")),
-  catifyme: dynamic(() => import("./catifyme/app")),
+  "okoti-menya": dynamic(() => import("./okoti-menya/app")),
 };
