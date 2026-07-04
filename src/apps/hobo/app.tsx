@@ -130,13 +130,13 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
   };
 
   return (
-    <div className="flex flex-col items-center select-none py-12">
+    <div className="flex flex-col items-center select-none py-6 sm:py-12">
       <button
         type="button"
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         aria-label={`Нажми на ${manifest.title}, чтобы заставить его орать`}
-        className="relative cursor-pointer max-w-[320px] w-full aspect-square focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background p-0 overflow-visible"
+        className="relative cursor-pointer max-w-[240px] sm:max-w-[320px] w-full aspect-square focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background p-0 overflow-visible"
       >
         {floatingOres.map((ore) => (
           <span
@@ -174,21 +174,21 @@ export default function HoboApp({ manifest }: { manifest: Manifest }) {
       </button>
 
       {!isExploded && (
-        <div className="mt-8 text-center">
+        <div className="mt-6 sm:mt-8 text-center">
           <span className="font-mono text-xs text-muted block uppercase tracking-wider">
             всего оров
           </span>
-          <span className="text-5xl font-extrabold tracking-tight text-accent block mt-1 font-mono">
+          <span className="text-4xl sm:text-5xl font-extrabold tracking-tight text-accent block mt-1 font-mono">
             {clicks}
           </span>
-          <span className="text-xs text-muted block mt-4 max-w-[240px] px-4">
+          <span className="text-xs text-muted block mt-3 sm:mt-4 max-w-[240px] px-4">
             жми на бомжа, чтобы заставить его орать
           </span>
         </div>
       )}
 
       {isExploded && (
-        <div className="mt-8 text-center animate-pulse">
+        <div className="mt-6 sm:mt-8 text-center animate-pulse">
           <span className="text-lg font-bold text-accent">БОМЖ ВЗОРВАЛСЯ!</span>
         </div>
       )}
