@@ -1,0 +1,17 @@
+{
+  "slug": "youtube",
+  "title": "YouTube Downloader",
+  "description": "Скачивай YouTube видео по списку URL. H.264, до 1080p.",
+  "tags": ["утилиты"],
+  "type": "showcase",
+  "releaseUrl": "https://github.com/slaid098/yt-video-downloader/releases",
+  "features": [
+    "Список URL → папка с видео",
+    "H.264, до 1080p",
+    "Автоматический retry при ошибках",
+    "Прокси support (HTTP и SOCKS5)",
+    "Логирование с timestamps",
+    "Без браузеров, кук, токенов"
+  ],
+  "created": "2026-07-04"
+}

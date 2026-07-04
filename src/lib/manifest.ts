@@ -6,6 +6,9 @@ export type Manifest = {
   title: string;
   description: string;
   tags?: string[];
+  type?: "interactive" | "showcase";
+  releaseUrl?: string;
+  features?: string[];
   ogImage?: string;
   created?: string;
 };
@@ -74,6 +77,15 @@ function normalizeManifest(data: Partial<Manifest>, fallbackSlug: string): Manif
   };
   if (data.ogImage !== undefined) {
     out.ogImage = data.ogImage;
+  }
+  if (data.type !== undefined) {
+    out.type = data.type;
+  }
+  if (data.releaseUrl !== undefined) {
+    out.releaseUrl = data.releaseUrl;
+  }
+  if (data.features !== undefined) {
+    out.features = data.features;
   }
   if (data.created !== undefined) {
     out.created = data.created;

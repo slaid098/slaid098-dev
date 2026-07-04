@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0a0a"/>
+      <stop offset="1" stop-color="#141414"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+  <g transform="translate(600 600)">
+    <rect x="-200" y="-150" width="400" height="300" rx="48" fill="none" stroke="#ccff00" stroke-width="8" opacity="0.25"/>
+    <path d="M -70 -90 L 110 0 L -70 90 Z" fill="#ccff00"/>
+  </g>
+  <text x="600" y="980" font-family="ui-sans-serif, system-ui, sans-serif" font-size="56" font-weight="600" fill="#888" text-anchor="middle" dominant-baseline="central" letter-spacing="2">YOUTUBE DOWNLOADER</text>
+</svg>

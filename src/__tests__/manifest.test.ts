@@ -30,10 +30,13 @@ describe("apps manifests", () => {
     expect(readManifest("does-not-exist-xyz")).toBeNull();
   });
 
-  it("returns null neighbors for single app", () => {
-    const { prev, next } = getNeighbors("bomzh");
-    expect(prev).toBeNull();
-    expect(next).toBeNull();
+  it("returns correct neighbors in multi-app ordering", () => {
+    const bomzh = getNeighbors("bomzh");
+    const youtube = getNeighbors("youtube");
+    expect(bomzh.prev).toBeNull();
+    expect(bomzh.next).toBe("youtube");
+    expect(youtube.prev).toBe("bomzh");
+    expect(youtube.next).toBeNull();
   });
 
   it("returns null neighbors for unknown slug", () => {
