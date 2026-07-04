@@ -92,7 +92,12 @@ describe("catifyme api", () => {
       vi.spyOn(document, "createElement").mockRestore();
       vi.spyOn(document, "createElement").mockImplementation((tag: string) => {
         if (tag === "canvas") {
-          return { width: 0, height: 0, getContext: () => null, toDataURL: vi.fn() } as unknown as HTMLCanvasElement;
+          return {
+            width: 0,
+            height: 0,
+            getContext: () => null,
+            toDataURL: vi.fn(),
+          } as unknown as HTMLCanvasElement;
         }
         return {} as HTMLCanvasElement;
       });
