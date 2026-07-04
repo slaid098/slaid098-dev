@@ -12,19 +12,19 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://slaid098.dev";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
-  title: "slaid098.dev",
-  description: "Микро-приложения на одном домене.",
+  title: "Лаборатория Slade // slaid098.dev",
+  description: "Утилиты для автоматизации и цифровые эксперименты.",
   openGraph: {
-    title: "slaid098.dev",
-    description: "Микро-приложения на одном домене.",
+    title: "Лаборатория Slade // slaid098.dev",
+    description: "Утилиты для автоматизации и цифровые эксперименты.",
     type: "website",
     siteName: "slaid098.dev",
     images: [{ url: "/og-image.png", width: 1024, height: 1024 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "slaid098.dev",
-    description: "Микро-приложения на одном домене.",
+    title: "Лаборатория Slade // slaid098.dev",
+    description: "Утилиты для автоматизации и цифровые эксперименты.",
     images: ["/og-image.png"],
   },
 };
