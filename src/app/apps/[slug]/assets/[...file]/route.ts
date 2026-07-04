@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { isAbsolute, join, relative } from "node:path";
 import { getAppsDir } from "@/lib/manifest";
 
 const extToType: Record<string, string> = {
@@ -32,13 +32,15 @@ export async function GET(
   const filepath = join(dir, filename);
 
   // Security check: ensure path doesn't escape the app's directory
-  if (!filepath.startsWith(dir)) {
+  const rel = relative(dir, filepath);
+  if (rel.startsWith("..") || isAbsolute(rel)) {
     return new Response("Forbidden", { status: 403 });
   }
 
   if (existsSync(filepath)) {
     const buf = await readFile(filepath);
-    const ext = filename.slice(filename.lastIndexOf("."));
+    const lastDot = filename.lastIndexOf(".");
+    const ext = lastDot === -1 ? "" : filename.slice(lastDot);
     const type = extToType[ext] ?? "application/octet-stream";
     return new Response(new Uint8Array(buf), {
       headers: { "Content-Type": type, ...CACHE_HEADERS },

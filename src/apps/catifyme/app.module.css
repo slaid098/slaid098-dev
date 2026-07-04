@@ -41,9 +41,33 @@
   animation: fadeInUp 0.4s ease-out forwards;
 }
 
+@keyframes funFade {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.funFact {
+  animation: funFade 3.5s ease-in-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .paw,
-  .fadeInUp {
+  .fadeInUp,
+  .funFact {
     animation: none;
   }
 }

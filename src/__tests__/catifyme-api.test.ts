@@ -4,6 +4,8 @@ import {
   analyzeSelfie,
   buildImageUrl,
   generateCat,
+  isAbortError,
+  isNetworkError,
   normalizeImageToJPEG,
 } from "@/apps/catifyme/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -48,6 +50,8 @@ function mockImageLoaded() {
 function mockCanvas() {
   const ctx = {
     drawImage: vi.fn(),
+    fillRect: vi.fn(),
+    fillStyle: "",
   };
   const canvas = {
     width: 0,
@@ -61,19 +65,35 @@ function mockCanvas() {
   });
 }
 
+function mockFetchForDataUrl() {
+  // normalizeImageToJPEG calls fetch(dataUrl) to get a blob for createImageBitmap
+  // We need fetch to return a blob for data: URLs, and the vision response for POST
+  const mockBlob = { size: 100, type: "image/png" };
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((url: string) => {
+      if (typeof url === "string" && url.startsWith("data:")) {
+        return Promise.resolve({
+          ok: true,
+          blob: () => Promise.resolve(mockBlob),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(validJsonResponse(validCatData)),
+      });
+    }),
+  );
+}
+
 describe("catifyme api", () => {
   beforeEach(() => {
     mockImageLoaded();
     mockCanvas();
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(validJsonResponse(validCatData)),
-        }),
-      ),
-    );
+    // createImageBitmap not available in happy-dom, so normalizeImageToJPEG
+    // will fall back to canvas method
+    vi.stubGlobal("createImageBitmap", undefined);
+    mockFetchForDataUrl();
   });
 
   afterEach(() => {
@@ -120,12 +140,15 @@ describe("catifyme api", () => {
     it("throws on empty AI response", async () => {
       vi.stubGlobal(
         "fetch",
-        vi.fn(() =>
-          Promise.resolve({
+        vi.fn((url: string) => {
+          if (typeof url === "string" && url.startsWith("data:")) {
+            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
+          }
+          return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ choices: [{ message: { content: "" } }] }),
-          }),
-        ),
+          });
+        }),
       );
       await expect(analyzeSelfie("data:image/jpeg;base64,abc")).rejects.toThrow(
         /Empty AI response/,
@@ -135,12 +158,15 @@ describe("catifyme api", () => {
     it("throws on incomplete JSON missing cat_breed", async () => {
       vi.stubGlobal(
         "fetch",
-        vi.fn(() =>
-          Promise.resolve({
+        vi.fn((url: string) => {
+          if (typeof url === "string" && url.startsWith("data:")) {
+            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
+          }
+          return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(validJsonResponse({ img_prompt: "x", cat_name: "Y" })),
-          }),
-        ),
+          });
+        }),
       );
       await expect(analyzeSelfie("data:image/jpeg;base64,abc")).rejects.toThrow(
         /Incomplete AI response/,
@@ -154,16 +180,42 @@ describe("catifyme api", () => {
     it("throws on non-ok HTTP response (429)", async () => {
       vi.stubGlobal(
         "fetch",
-        vi.fn(() => Promise.resolve({ ok: false, status: 429, json: () => Promise.resolve({}) })),
+        vi.fn((url: string) => {
+          if (typeof url === "string" && url.startsWith("data:")) {
+            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
+          }
+          return Promise.resolve({ ok: false, status: 429, json: () => Promise.resolve({}) });
+        }),
       );
       await expect(analyzeSelfie("data:image/jpeg;base64,abc")).rejects.toThrow(/vision-http-429/);
+    });
+
+    it("throws vision-bad-response when json() fails", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn((url: string) => {
+          if (typeof url === "string" && url.startsWith("data:")) {
+            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
+          }
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.reject(new SyntaxError("Unexpected token")),
+          });
+        }),
+      );
+      await expect(analyzeSelfie("data:image/jpeg;base64,abc")).rejects.toThrow(
+        /vision-bad-response/,
+      );
     });
 
     it("defaults catName to Кот when missing", async () => {
       vi.stubGlobal(
         "fetch",
-        vi.fn(() =>
-          Promise.resolve({
+        vi.fn((url: string) => {
+          if (typeof url === "string" && url.startsWith("data:")) {
+            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
+          }
+          return Promise.resolve({
             ok: true,
             json: () =>
               Promise.resolve(
@@ -172,13 +224,40 @@ describe("catifyme api", () => {
                   img_prompt: "x",
                 }),
               ),
-          }),
-        ),
+          });
+        }),
       );
       const result = await analyzeSelfie("data:image/jpeg;base64,abc");
       expect(result.catName).toBe("Кот");
       expect(result.personality).toBe("");
       expect(result.funFact).toBe("");
+    });
+
+    it("handles array content format in vision response", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn((url: string) => {
+          if (typeof url === "string" && url.startsWith("data:")) {
+            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
+          }
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                choices: [
+                  {
+                    message: {
+                      content: [{ type: "text", text: JSON.stringify(validCatData) }],
+                    },
+                  },
+                ],
+              }),
+          });
+        }),
+      );
+      const result = await analyzeSelfie("data:image/jpeg;base64,abc");
+      expect(result.catBreed).toBe("Токсичный капибас");
+      expect(result.catName).toBe("Бомжик");
     });
   });
 
@@ -206,6 +285,33 @@ describe("catifyme api", () => {
       const url = await generateCat("", "Siamese");
       expect(url).toContain("image.pollinations.ai");
       expect(url).toContain("Siamese");
+    });
+  });
+
+  describe("isAbortError", () => {
+    it("returns true for AbortError DOMException", () => {
+      const err = new DOMException("aborted", "AbortError");
+      expect(isAbortError(err)).toBe(true);
+    });
+
+    it("returns false for regular Error", () => {
+      expect(isAbortError(new Error("not abort"))).toBe(false);
+    });
+
+    it("returns false for non-Error values", () => {
+      expect(isAbortError(null)).toBe(false);
+      expect(isAbortError("string")).toBe(false);
+      expect(isAbortError(undefined)).toBe(false);
+    });
+  });
+
+  describe("isNetworkError", () => {
+    it("returns true for TypeError (fetch network error)", () => {
+      expect(isNetworkError(new TypeError("Failed to fetch"))).toBe(true);
+    });
+
+    it("returns false for regular Error", () => {
+      expect(isNetworkError(new Error("not network"))).toBe(false);
     });
   });
 });

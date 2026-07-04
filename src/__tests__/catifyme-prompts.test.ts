@@ -1,6 +1,8 @@
 import {
+  FUN_FACTS,
   buildFallbackImgPrompt,
   buildVisionPrompt,
+  pickFunFact,
   pickPersonality,
   pickStyle,
 } from "@/apps/catifyme/prompts";
@@ -57,5 +59,28 @@ describe("catifyme prompts", () => {
   it("buildFallbackImgPrompt falls back when breed empty", () => {
     const prompt = buildFallbackImgPrompt("");
     expect(prompt).toContain("the unknown one");
+  });
+
+  it("FUN_FACTS has at least 30 entries", () => {
+    expect(FUN_FACTS.length).toBeGreaterThanOrEqual(30);
+  });
+
+  it("FUN_FACTS entries are non-empty strings", () => {
+    for (const fact of FUN_FACTS) {
+      expect(typeof fact).toBe("string");
+      expect(fact.length).toBeGreaterThan(10);
+    }
+  });
+
+  it("pickFunFact returns a string from FUN_FACTS", () => {
+    const fact = pickFunFact();
+    expect(typeof fact).toBe("string");
+    expect(FUN_FACTS).toContain(fact);
+  });
+
+  it("pickFunFact excludes the provided fact", () => {
+    const first = FUN_FACTS[0] ?? "";
+    const second = pickFunFact(first);
+    expect(second).not.toBe(first);
   });
 });
