@@ -35,10 +35,13 @@ describe("apps manifests", () => {
 
   it("returns correct neighbors in multi-app ordering", () => {
     const bomzh = getNeighbors("bomzh");
+    const catifyme = getNeighbors("catifyme");
     const youtube = getNeighbors("youtube");
     expect(bomzh.prev).toBeNull();
-    expect(bomzh.next).toBe("youtube");
-    expect(youtube.prev).toBe("bomzh");
+    expect(bomzh.next).toBe("catifyme");
+    expect(catifyme.prev).toBe("bomzh");
+    expect(catifyme.next).toBe("youtube");
+    expect(youtube.prev).toBe("catifyme");
     expect(youtube.next).toBeNull();
   });
 

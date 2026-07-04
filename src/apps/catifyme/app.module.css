@@ -1,0 +1,49 @@
+@keyframes walkPaw {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translateY(0) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-12px) scale(1.2);
+  }
+}
+
+.paw {
+  animation: walkPaw 1s ease-in-out infinite;
+}
+
+.pawDelay1 {
+  animation-delay: 0s;
+}
+
+.pawDelay2 {
+  animation-delay: 0.15s;
+}
+
+.pawDelay3 {
+  animation-delay: 0.3s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fadeInUp {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paw,
+  .fadeInUp {
+    animation: none;
+  }
+}
