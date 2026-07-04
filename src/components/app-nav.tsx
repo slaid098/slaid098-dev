@@ -24,7 +24,7 @@ export function AppNav({ prev, next }: { prev: string | null; next: string | nul
 
   if (prev === null && next === null) return null;
   return (
-    <nav className="mx-auto flex max-w-2xl items-center justify-between border-t border-line px-6 py-10">
+    <nav className="sticky bottom-0 z-10 mx-auto flex max-w-2xl items-center justify-between border-t border-line bg-base/80 px-6 py-4 backdrop-blur-sm">
       {prev !== null ? (
         <Link
           aria-label="Предыдущее приложение"
