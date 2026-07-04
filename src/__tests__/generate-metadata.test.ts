@@ -15,7 +15,7 @@ describe("[slug] generateMetadata", () => {
   it("returns title + description + canonical for bomzh", async () => {
     const meta = await getMeta("bomzh");
     expect(meta.title).toBe("Бомж");
-    expect(meta.description).toBe("Тыкни, чтобы не лыбился.");
+    expect(meta.description).toBe("Жми на бомжа, чтобы заставить его орать.");
     expect(meta.alternates?.canonical).toBe("/bomzh");
   });
 
