@@ -8,7 +8,11 @@ export function ShareButton({ title, url }: { title: string; url: string }) {
   const handleShare = async () => {
     if (navigator.share && navigator.maxTouchPoints > 0) {
       await navigator.share({ title, url });
-    } else {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
       const input = document.createElement("input");
       input.value = url;
       input.style.position = "fixed";
@@ -17,9 +21,9 @@ export function ShareButton({ title, url }: { title: string; url: string }) {
       input.select();
       document.execCommand("copy");
       document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
