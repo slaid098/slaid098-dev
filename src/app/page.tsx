@@ -23,12 +23,12 @@ export default function Home() {
       {apps.length === 0 ? (
         <p className="mt-6 text-muted">Пока пусто. Загляни позже.</p>
       ) : (
-        <ul className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-12 grid auto-rows-fr grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {apps.map((app) => (
             <li key={app.slug}>
               <Link
                 href={`/${app.slug}`}
-                className="group block overflow-hidden rounded-xl border border-line bg-surface transition duration-200 hover:-translate-y-1 hover:border-accent hover:shadow-[0_12px_40px_-8px_var(--color-accent)]"
+                className="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface transition duration-200 hover:-translate-y-1 hover:border-accent hover:shadow-[0_12px_40px_-8px_var(--color-accent)]"
               >
                 <div className="aspect-square overflow-hidden bg-base">
                   <img
@@ -37,7 +37,7 @@ export default function Home() {
                     className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                   />
                 </div>
-                <div className="p-5">
+                <div className="flex flex-1 flex-col p-5">
                   {app.created !== undefined && (
                     <time
                       dateTime={app.created}
@@ -46,8 +46,8 @@ export default function Home() {
                       {app.created}
                     </time>
                   )}
-                  <h2 className="mb-1 text-lg font-medium">{app.title}</h2>
-                  <p className="text-sm text-muted">{app.description}</p>
+                  <h2 className="mb-1 line-clamp-1 text-lg font-medium">{app.title}</h2>
+                  <p className="line-clamp-2 text-sm text-muted">{app.description}</p>
                 </div>
               </Link>
             </li>
