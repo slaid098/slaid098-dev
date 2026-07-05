@@ -2,7 +2,14 @@
 
 import type { Manifest } from "@/lib/manifest";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { type CatAnalysis, analyzeSelfie, generateCat, isAbortError, isNetworkError } from "./api";
+import {
+  type CatAnalysis,
+  analyzeSelfie,
+  fetchImageBlob,
+  generateCat,
+  isAbortError,
+  isNetworkError,
+} from "./api";
 import styles from "./app.module.css";
 import { pickLoadingMessage } from "./prompts";
 
@@ -40,11 +47,14 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const imgSrcRef = useRef<string | null>(null);
+  const blobUrlRef = useRef<string | null>(null);
 
-  // Abort in-flight requests on unmount
+  // Abort in-flight requests and revoke blob URL on unmount
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
     };
   }, []);
 
@@ -104,9 +114,40 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
     try {
       const analysis = await analyzeSelfie(selfieUrl, ac.signal);
       setLoadingPhase("thinking");
-      const imgUrl = await generateCat(analysis.imgPrompt, analysis.catBreed);
+      const imgSrc = await generateCat(analysis.imgPrompt, analysis.catBreed);
+      setLoadingPhase("drawing");
+
+      // Revoke any previous blob URL before creating a new one
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+
+      let blobUrl: string;
+      try {
+        blobUrl = await fetchImageBlob(imgSrc, ac.signal);
+      } catch (imgErr) {
+        if (isAbortError(imgErr)) throw imgErr;
+        // Image failed but text is ready — show result with retry placeholder
+        imgSrcRef.current = imgSrc;
+        setResult(analysis);
+        setResultImgUrl(null);
+        setImgError(true);
+        setImgLoading(false);
+        setScreen("result");
+        return;
+      }
+
+      if (ac.signal.aborted) {
+        URL.revokeObjectURL(blobUrl);
+        return;
+      }
+
+      imgSrcRef.current = imgSrc;
+      blobUrlRef.current = blobUrl;
       setResult(analysis);
-      setResultImgUrl(imgUrl);
+      setResultImgUrl(blobUrl);
+      setImgError(false);
       setImgLoading(true);
       setScreen("result");
     } catch (err) {
@@ -136,25 +177,52 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
   const handleReset = useCallback(() => {
     abortRef.current?.abort();
     abortRef.current = null;
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+    imgSrcRef.current = null;
     setSelfieUrl(null);
     setResult(null);
     setResultImgUrl(null);
     setError(null);
     setImgError(false);
+    setImgLoading(false);
     setScreen("hero");
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   }, []);
 
-  const handleRetryImage = useCallback(() => {
-    if (!resultImgUrl) return;
+  const handleRetryImage = useCallback(async () => {
+    if (!imgSrcRef.current) return;
     setImgError(false);
     setImgLoading(true);
-    // Force reload by appending cache-buster
-    const separator = resultImgUrl.includes("?") ? "&" : "?";
-    const newUrl = `${resultImgUrl}${separator}_retry=${Date.now()}`;
-    setResultImgUrl(newUrl);
-  }, [resultImgUrl]);
+
+    const ac = new AbortController();
+    abortRef.current = ac;
+
+    const separator = imgSrcRef.current.includes("?") ? "&" : "?";
+    const retrySrc = `${imgSrcRef.current}${separator}_retry=${Date.now()}`;
+
+    try {
+      const newBlobUrl = await fetchImageBlob(retrySrc, ac.signal);
+      if (ac.signal.aborted) {
+        URL.revokeObjectURL(newBlobUrl);
+        return;
+      }
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = newBlobUrl;
+      setResultImgUrl(newBlobUrl);
+      setImgError(false);
+      setImgLoading(false);
+    } catch (err) {
+      if (isAbortError(err)) return;
+      setImgError(true);
+      setImgLoading(false);
+    } finally {
+      if (abortRef.current === ac) abortRef.current = null;
+    }
+  }, []);
 
   const handleDownload = useCallback(async () => {
     if (!resultImgUrl) return;
@@ -294,7 +362,7 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
         </output>
       )}
 
-      {screen === "result" && result && resultImgUrl && (
+      {screen === "result" && result && (
         <div className={`flex flex-col items-center px-4 ${styles.fadeInUp}`}>
           <div className="relative mb-6 overflow-hidden rounded-xl border border-line">
             {imgLoading && !imgError && (
@@ -312,14 +380,14 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
                   <p className="mb-3 text-sm text-muted">Картинка не загрузилась</p>
                   <button
                     type="button"
-                    onClick={handleRetryImage}
+                    onClick={() => void handleRetryImage()}
                     className="rounded-lg border border-line px-4 py-2 text-xs font-medium text-muted transition hover:border-accent hover:text-accent"
                   >
                     Повторить
                   </button>
                 </div>
               </div>
-            ) : (
+            ) : resultImgUrl ? (
               <img
                 src={resultImgUrl}
                 alt={`Кот по кличке ${result.catName}, порода ${result.catBreed}. ${result.personality}`}
@@ -330,17 +398,23 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
                   setImgError(true);
                 }}
               />
+            ) : (
+              <div className="aspect-square max-h-96 max-w-full bg-surface" />
             )}
           </div>
 
-          <div className="mb-6 max-w-md text-center">
-            <p className="text-2xl font-extrabold tracking-tight text-accent">{result.catName}</p>
-            <p className="mt-1 text-sm font-mono uppercase tracking-wider text-muted">
-              {result.catBreed}
-            </p>
-            {result.personality && <p className="mt-4 text-base text-fg">{result.personality}</p>}
-            {result.funFact && <p className="mt-3 text-sm italic text-muted">— {result.funFact}</p>}
-          </div>
+          {!imgLoading && (
+            <div className="mb-6 max-w-md text-center">
+              <p className="text-2xl font-extrabold tracking-tight text-accent">{result.catName}</p>
+              <p className="mt-1 text-sm font-mono uppercase tracking-wider text-muted">
+                {result.catBreed}
+              </p>
+              {result.personality && <p className="mt-4 text-base text-fg">{result.personality}</p>}
+              {result.funFact && (
+                <p className="mt-3 text-sm italic text-muted">— {result.funFact}</p>
+              )}
+            </div>
+          )}
 
           <div className="flex gap-3 w-full max-w-xs">
             <button
