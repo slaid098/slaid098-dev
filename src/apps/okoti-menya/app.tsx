@@ -4,7 +4,7 @@ import type { Manifest } from "@/lib/manifest";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type CatAnalysis, analyzeSelfie, generateCat, isAbortError, isNetworkError } from "./api";
 import styles from "./app.module.css";
-import { pickFunFact } from "./prompts";
+import { pickLoadingMessage } from "./prompts";
 
 type Screen = "hero" | "preview" | "loading" | "result";
 type LoadingPhase = "analyzing" | "thinking" | "drawing";
@@ -35,7 +35,7 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
   const [error, setError] = useState<string | null>(null);
   const [imgLoading, setImgLoading] = useState<boolean>(false);
   const [imgError, setImgError] = useState<boolean>(false);
-  const [funFact, setFunFact] = useState<string>("");
+  const [loadingMessage, setLoadingMessage] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -48,13 +48,13 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
     };
   }, []);
 
-  // Rotate fun facts during loading
+  // Rotate loading messages during loading
   useEffect(() => {
     if (screen !== "loading") return;
-    setFunFact(pickFunFact());
+    setLoadingMessage(pickLoadingMessage());
     const id = setInterval(() => {
-      setFunFact((prev) => pickFunFact(prev));
-    }, 3500);
+      setLoadingMessage((prev) => pickLoadingMessage(prev));
+    }, 5500);
     return () => clearInterval(id);
   }, [screen]);
 
@@ -115,12 +115,12 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
         return;
       }
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes("vision-http-429")) {
-        handleError("Слишком много запросов. Подожди минуту и попробуй снова.");
-      } else if (msg.includes("vision-http-5")) {
+      if (msg === "quota-exceeded" || msg.includes("миска пуста")) {
+        // Show funny quota message instead of generic error
+        setError("Твоя миска пуста. Приходи завтра за новой порцией презрения.");
+        setScreen("hero");
+      } else if (msg.includes("analyze-http-5") || msg.includes("ai-unavailable")) {
         handleError("AI-сервер лёг. Попробуй через минуту.");
-      } else if (msg.includes("vision-bad-response")) {
-        handleError("AI вернул ерунду. Попробуй ещё раз.");
       } else if (msg.includes("Incomplete") || msg.includes("Empty")) {
         handleError("AI не смог разобрать фото. Попробуй другое селфи.");
       } else if (isNetworkError(err)) {
@@ -276,12 +276,12 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
           <p className="text-base text-muted">
             {LOADING_PHASES.find((p) => p.phase === loadingPhase)?.text ?? "Анализирую селфи…"}
           </p>
-          {funFact && (
+          {loadingMessage && (
             <p
-              key={funFact}
+              key={loadingMessage}
               className={`mt-4 max-w-sm text-center text-sm text-muted/70 ${styles.funFact}`}
             >
-              {funFact}
+              {loadingMessage}
             </p>
           )}
           <button
