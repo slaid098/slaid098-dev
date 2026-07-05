@@ -1,4 +1,4 @@
-import { buildFallbackImgPrompt, pickPersonality } from "@/apps/okoti-menya/prompts";
+import { buildFallbackImgPrompt, pickPersonality } from "@/apps/okotis/prompts";
 import { checkQuota, incrementQuota } from "@/lib/quota";
 import { type GeminiResponse, buildGeminiSystemInstruction } from "./prompt";
 
@@ -8,6 +8,7 @@ const GEMINI_TIMEOUT_MS = 10_000;
 const POLLINATIONS_TEXT_ENDPOINT = "https://text.pollinations.ai/openai";
 const POLLINATIONS_TIMEOUT_MS = 15_000;
 const RETRY_DELAYS = [800, 1500];
+const RETRY_JITTER = [200, 300];
 
 type AnalyzeRequest = {
   image?: string;
@@ -17,6 +18,10 @@ type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: str
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function jitteredDelay(base: number, jitter: number): number {
+  return base + Math.floor((Math.random() - 0.5) * 2 * jitter);
 }
 
 function extractBase64(dataUrl: string): { mimeType: string; data: string } | null {
@@ -67,7 +72,11 @@ async function callGemini(imageData: string): Promise<GeminiResponse> {
 
   let lastError = "";
   for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
-    if (attempt > 0) await sleep(RETRY_DELAYS[attempt - 1] ?? 1500);
+    if (attempt > 0) {
+      const base = RETRY_DELAYS[attempt - 1] ?? 1500;
+      const jitter = RETRY_JITTER[attempt - 1] ?? 300;
+      await sleep(jitteredDelay(base, jitter));
+    }
 
     try {
       const res = await fetchWithTimeout(
