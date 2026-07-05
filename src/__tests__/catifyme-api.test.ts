@@ -7,7 +7,7 @@ import {
   isAbortError,
   isNetworkError,
   normalizeImageToJPEG,
-} from "@/apps/okoti-menya/api";
+} from "@/apps/okotis/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const validCatData = {
@@ -89,7 +89,7 @@ function mockFetchForDataUrlAndApi(apiResponse: unknown = validCatData, apiStatu
   );
 }
 
-describe("okoti-menya api", () => {
+describe("okotis api", () => {
   beforeEach(() => {
     mockImageLoaded();
     mockCanvas();
@@ -179,23 +179,27 @@ describe("okoti-menya api", () => {
   });
 
   describe("buildImageUrl", () => {
-    it("builds a /api/cat-image URL with encoded prompt", () => {
+    it("builds a Pollinations URL with encoded prompt and required params", () => {
       const url = buildImageUrl("a cute cat");
-      expect(url).toContain("/api/cat-image?prompt=");
+      expect(url).toContain("https://image.pollinations.ai/prompt/");
       expect(url).toContain("a%20cute%20cat");
+      expect(url).toContain("width=1024");
+      expect(url).toContain("height=1024");
+      expect(url).toContain("model=flux");
+      expect(url).toContain("nologo=true");
     });
   });
 
   describe("generateCat", () => {
     it("returns a URL using the provided imgPrompt", async () => {
       const url = await generateCat("custom prompt here", "Tabby");
-      expect(url).toContain("/api/cat-image");
+      expect(url).toContain("image.pollinations.ai");
       expect(url).toContain("custom%20prompt%20here");
     });
 
     it("falls back to breed-based prompt when imgPrompt empty", async () => {
       const url = await generateCat("", "Siamese");
-      expect(url).toContain("/api/cat-image");
+      expect(url).toContain("image.pollinations.ai");
       expect(url).toContain("Siamese");
     });
   });

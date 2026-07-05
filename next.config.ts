@@ -28,7 +28,17 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/catifyme",
-        destination: "/okoti-menya",
+        destination: "/okotis",
+        permanent: true,
+      },
+      {
+        source: "/okoti-menya",
+        destination: "/okotis",
+        permanent: true,
+      },
+      {
+        source: "/okoti-menya/:path*",
+        destination: "/okotis/:path*",
         permanent: true,
       },
     ];

@@ -1,4 +1,4 @@
-import { pickPersonality, pickStyle } from "@/apps/okoti-menya/prompts";
+import { pickPersonality, pickStyle } from "@/apps/okotis/prompts";
 
 export function buildGeminiSystemInstruction(): string {
   const style = pickStyle();

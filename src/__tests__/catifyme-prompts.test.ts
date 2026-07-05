@@ -4,10 +4,10 @@ import {
   pickLoadingMessage,
   pickPersonality,
   pickStyle,
-} from "@/apps/okoti-menya/prompts";
+} from "@/apps/okotis/prompts";
 import { describe, expect, it } from "vitest";
 
-describe("okoti-menya prompts", () => {
+describe("okotis prompts", () => {
   it("pickStyle returns non-empty string from STYLES", () => {
     const style = pickStyle();
     expect(typeof style).toBe("string");

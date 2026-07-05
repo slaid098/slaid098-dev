@@ -2,6 +2,10 @@ import { buildFallbackImgPrompt } from "./prompts";
 
 const NORMALIZE_MAX = 1536;
 const JPEG_QUALITY = 0.92;
+const IMAGE_ENDPOINT = "https://image.pollinations.ai/prompt";
+const IMAGE_WIDTH = 1024;
+const IMAGE_HEIGHT = 1024;
+const IMAGE_MODEL = "flux";
 
 export type CatAnalysis = {
   catBreed: string;
@@ -107,7 +111,18 @@ export async function analyzeSelfie(
 }
 
 export function buildImageUrl(prompt: string): string {
-  return `/api/cat-image?prompt=${encodeURIComponent(prompt)}`;
+  const encoded = encodeURIComponent(prompt);
+  const params = new URLSearchParams({
+    width: String(IMAGE_WIDTH),
+    height: String(IMAGE_HEIGHT),
+    model: IMAGE_MODEL,
+    nologo: "true",
+  });
+  const token = process.env.NEXT_PUBLIC_POLLINATIONS_API_KEY;
+  if (token) {
+    params.set("token", token);
+  }
+  return `${IMAGE_ENDPOINT}/${encoded}?${params.toString()}`;
 }
 
 export async function generateCat(imgPrompt: string, breed: string): Promise<string> {
