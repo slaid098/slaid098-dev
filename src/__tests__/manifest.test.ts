@@ -38,6 +38,7 @@ describe("apps manifests", () => {
     const okotis = getNeighbors("okotis");
     const takeBreak = getNeighbors("take-break");
     const ytVideoDownloader = getNeighbors("yt-video-downloader");
+    const voiceAssistant = getNeighbors("voice-assistant");
     expect(bomzh.prev).toBeNull();
     expect(bomzh.next).toBe("okotis");
     expect(okotis.prev).toBe("bomzh");
@@ -45,7 +46,9 @@ describe("apps manifests", () => {
     expect(takeBreak.prev).toBe("okotis");
     expect(takeBreak.next).toBe("yt-video-downloader");
     expect(ytVideoDownloader.prev).toBe("take-break");
-    expect(ytVideoDownloader.next).toBeNull();
+    expect(ytVideoDownloader.next).toBe("voice-assistant");
+    expect(voiceAssistant.prev).toBe("yt-video-downloader");
+    expect(voiceAssistant.next).toBeNull();
   });
 
   it("returns null neighbors for unknown slug", () => {
