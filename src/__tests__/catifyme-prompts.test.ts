@@ -1,8 +1,7 @@
 import {
-  FUN_FACTS,
+  LOADING_MESSAGES,
   buildFallbackImgPrompt,
-  buildVisionPrompt,
-  pickFunFact,
+  pickLoadingMessage,
   pickPersonality,
   pickStyle,
 } from "@/apps/okoti-menya/prompts";
@@ -21,35 +20,6 @@ describe("okoti-menya prompts", () => {
     expect(vibe.length).toBeGreaterThan(10);
   });
 
-  it("buildVisionPrompt returns openai model with system + user messages", () => {
-    const result = buildVisionPrompt("data:image/jpeg;base64,abc");
-    expect(result.model).toBe("openai");
-    expect(result.messages).toHaveLength(2);
-    const sys = result.messages[0];
-    expect(sys?.role).toBe("system");
-    expect(result.messages[1]?.role).toBe("user");
-  });
-
-  it("buildVisionPrompt system message includes Russian breed examples and edgy vibe", () => {
-    const result = buildVisionPrompt("data:image/jpeg;base64,abc");
-    const sys = result.messages[0];
-    const systemContent = sys?.content;
-    expect(typeof systemContent).toBe("string");
-    expect(systemContent as string).toContain("cat_breed");
-    expect(systemContent as string).toContain("img_prompt");
-    expect(systemContent as string).toContain("Токсичный капибас");
-  });
-
-  it("buildVisionPrompt user message includes image_url with data URL", () => {
-    const result = buildVisionPrompt("data:image/jpeg;base64,abc");
-    const userContent = result.messages[1]?.content;
-    expect(Array.isArray(userContent)).toBe(true);
-    const parts = userContent as Array<{ type: string; image_url?: { url: string } }>;
-    const imgPart = parts.find((p) => p.type === "image_url");
-    expect(imgPart).toBeDefined();
-    expect(imgPart?.image_url?.url).toBe("data:image/jpeg;base64,abc");
-  });
-
   it("buildFallbackImgPrompt contains breed and style keywords", () => {
     const prompt = buildFallbackImgPrompt("Дерзкий пенёк");
     expect(prompt).toContain("Дерзкий пенёк");
@@ -61,26 +31,26 @@ describe("okoti-menya prompts", () => {
     expect(prompt).toContain("the unknown one");
   });
 
-  it("FUN_FACTS has at least 30 entries", () => {
-    expect(FUN_FACTS.length).toBeGreaterThanOrEqual(30);
+  it("LOADING_MESSAGES has at least 30 entries", () => {
+    expect(LOADING_MESSAGES.length).toBeGreaterThanOrEqual(30);
   });
 
-  it("FUN_FACTS entries are non-empty strings", () => {
-    for (const fact of FUN_FACTS) {
-      expect(typeof fact).toBe("string");
-      expect(fact.length).toBeGreaterThan(10);
+  it("LOADING_MESSAGES entries are non-empty strings", () => {
+    for (const msg of LOADING_MESSAGES) {
+      expect(typeof msg).toBe("string");
+      expect(msg.length).toBeGreaterThan(10);
     }
   });
 
-  it("pickFunFact returns a string from FUN_FACTS", () => {
-    const fact = pickFunFact();
-    expect(typeof fact).toBe("string");
-    expect(FUN_FACTS).toContain(fact);
+  it("pickLoadingMessage returns a string from LOADING_MESSAGES", () => {
+    const msg = pickLoadingMessage();
+    expect(typeof msg).toBe("string");
+    expect(LOADING_MESSAGES).toContain(msg);
   });
 
-  it("pickFunFact excludes the provided fact", () => {
-    const first = FUN_FACTS[0] ?? "";
-    const second = pickFunFact(first);
+  it("pickLoadingMessage excludes the provided message", () => {
+    const first = LOADING_MESSAGES[0] ?? "";
+    const second = pickLoadingMessage(first);
     expect(second).not.toBe(first);
   });
 });

@@ -10,10 +10,6 @@ import {
 } from "@/apps/okoti-menya/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const validJsonResponse = (data: Record<string, unknown>) => ({
-  choices: [{ message: { content: JSON.stringify(data) } }],
-});
-
 const validCatData = {
   cat_breed: "Токсичный капибас",
   cat_name: "Бомжик",
@@ -65,22 +61,29 @@ function mockCanvas() {
   });
 }
 
-function mockFetchForDataUrl() {
-  // normalizeImageToJPEG calls fetch(dataUrl) to get a blob for createImageBitmap
-  // We need fetch to return a blob for data: URLs, and the vision response for POST
+function mockFetchForDataUrlAndApi(apiResponse: unknown = validCatData, apiStatus = 200) {
   const mockBlob = { size: 100, type: "image/png" };
   vi.stubGlobal(
     "fetch",
-    vi.fn((url: string) => {
+    vi.fn((url: string, opts?: RequestInit) => {
+      // normalizeImageToJPEG calls fetch(dataUrl) to get a blob
       if (typeof url === "string" && url.startsWith("data:")) {
         return Promise.resolve({
           ok: true,
           blob: () => Promise.resolve(mockBlob),
         });
       }
+      // /api/analyze POST
+      if (url === "/api/analyze") {
+        return Promise.resolve({
+          ok: apiStatus === 200,
+          status: apiStatus,
+          json: () => Promise.resolve(apiResponse),
+        });
+      }
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve(validJsonResponse(validCatData)),
+        json: () => Promise.resolve({}),
       });
     }),
   );
@@ -90,10 +93,8 @@ describe("okoti-menya api", () => {
   beforeEach(() => {
     mockImageLoaded();
     mockCanvas();
-    // createImageBitmap not available in happy-dom, so normalizeImageToJPEG
-    // will fall back to canvas method
     vi.stubGlobal("createImageBitmap", undefined);
-    mockFetchForDataUrl();
+    mockFetchForDataUrlAndApi();
   });
 
   afterEach(() => {
@@ -138,36 +139,14 @@ describe("okoti-menya api", () => {
     });
 
     it("throws on empty AI response", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn((url: string) => {
-          if (typeof url === "string" && url.startsWith("data:")) {
-            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
-          }
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({ choices: [{ message: { content: "" } }] }),
-          });
-        }),
-      );
+      mockFetchForDataUrlAndApi({});
       await expect(analyzeSelfie("data:image/jpeg;base64,abc")).rejects.toThrow(
-        /Empty AI response/,
+        /Incomplete AI response/,
       );
     });
 
     it("throws on incomplete JSON missing cat_breed", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn((url: string) => {
-          if (typeof url === "string" && url.startsWith("data:")) {
-            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
-          }
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(validJsonResponse({ img_prompt: "x", cat_name: "Y" })),
-          });
-        }),
-      );
+      mockFetchForDataUrlAndApi({ img_prompt: "x", cat_name: "Y" });
       await expect(analyzeSelfie("data:image/jpeg;base64,abc")).rejects.toThrow(
         /Incomplete AI response/,
       );
@@ -177,113 +156,46 @@ describe("okoti-menya api", () => {
       await expect(analyzeSelfie("")).rejects.toThrow(/No image provided/);
     });
 
-    it("throws on non-ok HTTP response (429)", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn((url: string) => {
-          if (typeof url === "string" && url.startsWith("data:")) {
-            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
-          }
-          return Promise.resolve({ ok: false, status: 429, json: () => Promise.resolve({}) });
-        }),
+    it("throws quota message on 429", async () => {
+      mockFetchForDataUrlAndApi(
+        { message: "Твоя миска пуста. Приходи завтра за новой порцией презрения." },
+        429,
       );
-      await expect(analyzeSelfie("data:image/jpeg;base64,abc")).rejects.toThrow(/vision-http-429/);
+      await expect(analyzeSelfie("data:image/jpeg;base64,abc")).rejects.toThrow(/миска пуста/);
     });
 
-    it("throws vision-bad-response when json() fails", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn((url: string) => {
-          if (typeof url === "string" && url.startsWith("data:")) {
-            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
-          }
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.reject(new SyntaxError("Unexpected token")),
-          });
-        }),
-      );
-      await expect(analyzeSelfie("data:image/jpeg;base64,abc")).rejects.toThrow(
-        /vision-bad-response/,
-      );
+    it("throws on 502 server error", async () => {
+      mockFetchForDataUrlAndApi({ error: "ai-unavailable" }, 502);
+      await expect(analyzeSelfie("data:image/jpeg;base64,abc")).rejects.toThrow(/analyze-http-502/);
     });
 
     it("defaults catName to Кот when missing", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn((url: string) => {
-          if (typeof url === "string" && url.startsWith("data:")) {
-            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
-          }
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve(
-                validJsonResponse({
-                  cat_breed: "Бомж",
-                  img_prompt: "x",
-                }),
-              ),
-          });
-        }),
-      );
+      mockFetchForDataUrlAndApi({ cat_breed: "Бомж", img_prompt: "x" });
       const result = await analyzeSelfie("data:image/jpeg;base64,abc");
       expect(result.catName).toBe("Кот");
       expect(result.personality).toBe("");
       expect(result.funFact).toBe("");
     });
-
-    it("handles array content format in vision response", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn((url: string) => {
-          if (typeof url === "string" && url.startsWith("data:")) {
-            return Promise.resolve({ ok: true, blob: () => Promise.resolve({}) });
-          }
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                choices: [
-                  {
-                    message: {
-                      content: [{ type: "text", text: JSON.stringify(validCatData) }],
-                    },
-                  },
-                ],
-              }),
-          });
-        }),
-      );
-      const result = await analyzeSelfie("data:image/jpeg;base64,abc");
-      expect(result.catBreed).toBe("Токсичный капибас");
-      expect(result.catName).toBe("Бомжик");
-    });
   });
 
   describe("buildImageUrl", () => {
-    it("builds a pollinations URL with encoded prompt and required params", () => {
+    it("builds a /api/cat-image URL with encoded prompt", () => {
       const url = buildImageUrl("a cute cat");
-      expect(url).toContain("https://image.pollinations.ai/prompt/");
+      expect(url).toContain("/api/cat-image?prompt=");
       expect(url).toContain("a%20cute%20cat");
-      expect(url).toContain("width=1024");
-      expect(url).toContain("height=1024");
-      expect(url).toContain("model=flux");
-      expect(url).toContain("nologo=true");
-      expect(url).toContain("referrer=slaid098.dev");
     });
   });
 
   describe("generateCat", () => {
-    it("returns a URL string using the provided imgPrompt", async () => {
+    it("returns a URL using the provided imgPrompt", async () => {
       const url = await generateCat("custom prompt here", "Tabby");
-      expect(url).toContain("image.pollinations.ai");
+      expect(url).toContain("/api/cat-image");
       expect(url).toContain("custom%20prompt%20here");
     });
 
     it("falls back to breed-based prompt when imgPrompt empty", async () => {
       const url = await generateCat("", "Siamese");
-      expect(url).toContain("image.pollinations.ai");
+      expect(url).toContain("/api/cat-image");
       expect(url).toContain("Siamese");
     });
   });

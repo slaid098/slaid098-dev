@@ -61,7 +61,7 @@
 }
 
 .funFact {
-  animation: funFade 3.5s ease-in-out forwards;
+  animation: funFade 5.5s ease-in-out forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,14 +1,7 @@
-import { buildFallbackImgPrompt, buildVisionPrompt } from "./prompts";
+import { buildFallbackImgPrompt } from "./prompts";
 
-const VISION_ENDPOINT = "https://text.pollinations.ai/openai";
-const IMAGE_ENDPOINT = "https://image.pollinations.ai/prompt";
-const VISION_MODEL = "openai";
-const IMAGE_MODEL = "flux";
 const NORMALIZE_MAX = 1536;
 const JPEG_QUALITY = 0.92;
-const IMAGE_WIDTH = 1024;
-const IMAGE_HEIGHT = 1024;
-const REFERRER = "slaid098.dev";
 
 export type CatAnalysis = {
   catBreed: string;
@@ -17,66 +10,6 @@ export type CatAnalysis = {
   funFact: string;
   imgPrompt: string;
 };
-
-type ContentPart =
-  | { type: "text"; text: string }
-  | { type: "image_url"; image_url: { url: string } };
-
-type VisionResponse = {
-  choices?: Array<{ message?: { content?: string | ContentPart[] } }>;
-  message?: { content?: string | ContentPart[] };
-  content?: string | ContentPart[];
-};
-
-function contentToString(content: string | ContentPart[] | undefined): string {
-  if (typeof content === "string") return content;
-  if (Array.isArray(content)) {
-    return content
-      .filter(
-        (p): p is { type: "text"; text: string } => p.type === "text" && typeof p.text === "string",
-      )
-      .map((p) => p.text)
-      .join("");
-  }
-  return "";
-}
-
-function extractText(response: unknown): string {
-  if (response == null) return "";
-  if (typeof response === "string") return response;
-  const r = response as VisionResponse;
-  if (r.choices?.[0]?.message?.content !== undefined) {
-    return contentToString(r.choices[0].message.content);
-  }
-  if (r.message?.content !== undefined) {
-    return contentToString(r.message.content);
-  }
-  if (r.content !== undefined) {
-    return contentToString(r.content);
-  }
-  return "";
-}
-
-function stripCodeFences(text: string): string {
-  return text
-    .replace(/^\s*```(?:json)?\s*/i, "")
-    .replace(/\s*```\s*$/i, "")
-    .trim();
-}
-
-function parseJSON(text: string): Record<string, unknown> {
-  const cleaned = stripCodeFences(text);
-  const start = cleaned.indexOf("{");
-  const end = cleaned.lastIndexOf("}");
-  if (start === -1 || end === -1 || end <= start) {
-    throw new Error("No JSON object found in response");
-  }
-  const parsed: unknown = JSON.parse(cleaned.slice(start, end + 1));
-  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    throw new Error("AI response is not a JSON object");
-  }
-  return parsed as Record<string, unknown>;
-}
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -140,34 +73,28 @@ export async function analyzeSelfie(
   if (!imageDataUrl) throw new Error("No image provided");
 
   const normalized = await normalizeImageToJPEG(imageDataUrl).catch(() => imageDataUrl);
-  const body = buildVisionPrompt(normalized);
 
-  const res = await fetch(VISION_ENDPOINT, {
+  const res = await fetch("/api/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ image: normalized }),
     ...(signal ? { signal } : {}),
   });
 
+  if (res.status === 429) {
+    const data = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(data.message ?? "quota-exceeded");
+  }
+
   if (!res.ok) {
-    throw new Error(`vision-http-${res.status}`);
+    throw new Error(`analyze-http-${res.status}`);
   }
 
-  let json: unknown;
-  try {
-    json = await res.json();
-  } catch {
-    throw new Error("vision-bad-response");
-  }
-
-  const text = extractText(json);
-  if (!text) throw new Error("Empty AI response");
-
-  const data = parseJSON(text);
+  const data = (await res.json()) as Record<string, unknown>;
   const catBreed = data.cat_breed;
   const imgPrompt = data.img_prompt;
   if (typeof catBreed !== "string" || typeof imgPrompt !== "string" || !catBreed || !imgPrompt) {
-    throw new Error(`Incomplete AI response: ${text.slice(0, 200)}`);
+    throw new Error("Incomplete AI response");
   }
 
   return {
@@ -180,15 +107,7 @@ export async function analyzeSelfie(
 }
 
 export function buildImageUrl(prompt: string): string {
-  const encoded = encodeURIComponent(prompt);
-  const params = new URLSearchParams({
-    width: String(IMAGE_WIDTH),
-    height: String(IMAGE_HEIGHT),
-    model: IMAGE_MODEL,
-    nologo: "true",
-    referrer: REFERRER,
-  });
-  return `${IMAGE_ENDPOINT}/${encoded}?${params.toString()}`;
+  return `/api/cat-image?prompt=${encodeURIComponent(prompt)}`;
 }
 
 export async function generateCat(imgPrompt: string, breed: string): Promise<string> {
