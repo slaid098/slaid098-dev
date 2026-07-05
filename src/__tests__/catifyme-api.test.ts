@@ -3,6 +3,7 @@
 import {
   analyzeSelfie,
   buildImageUrl,
+  fetchImageBlob,
   generateCat,
   isAbortError,
   isNetworkError,
@@ -228,6 +229,86 @@ describe("okotis api", () => {
 
     it("returns false for regular Error", () => {
       expect(isNetworkError(new Error("not network"))).toBe(false);
+    });
+  });
+
+  describe("fetchImageBlob", () => {
+    function mockFetchForImage(opts?: {
+      ok?: boolean;
+      status?: number;
+      blobType?: string;
+      blobSize?: number;
+    }) {
+      const { ok = true, status = 200, blobType = "image/jpeg", blobSize = 1024 } = opts ?? {};
+      const mockBlob = new Blob([new Uint8Array(blobSize ?? 0)], { type: blobType });
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          ok,
+          status,
+          blob: () => Promise.resolve(mockBlob),
+        }),
+      );
+    }
+
+    function mockFetchReject(err: unknown) {
+      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(err));
+    }
+
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+
+    beforeEach(() => {
+      vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock");
+      vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      URL.createObjectURL = originalCreateObjectURL;
+      URL.revokeObjectURL = originalRevokeObjectURL;
+      vi.unstubAllGlobals();
+    });
+
+    it("returns a blob URL on success", async () => {
+      mockFetchForImage();
+      const result = await fetchImageBlob("https://example.com/cat.jpg");
+      expect(result).toBe("blob:mock");
+    });
+
+    it("throws image-http-* on non-ok response", async () => {
+      mockFetchForImage({ ok: false, status: 502 });
+      await expect(fetchImageBlob("https://example.com/cat.jpg")).rejects.toThrow(/image-http-502/);
+    });
+
+    it("throws image-bad-type when blob is not an image", async () => {
+      mockFetchForImage({ blobType: "text/html" });
+      await expect(fetchImageBlob("https://example.com/cat.jpg")).rejects.toThrow(/image-bad-type/);
+    });
+
+    it("throws AbortError immediately when signal is already aborted", async () => {
+      mockFetchForImage();
+      const controller = new AbortController();
+      controller.abort();
+      await expect(
+        fetchImageBlob("https://example.com/cat.jpg", controller.signal),
+      ).rejects.toThrow(/aborted/);
+    });
+
+    it("throws AbortError when signal aborts during fetch", async () => {
+      const controller = new AbortController();
+      mockFetchReject(new DOMException("aborted", "AbortError"));
+      const promise = fetchImageBlob("https://example.com/cat.jpg", controller.signal);
+      controller.abort();
+      await expect(promise).rejects.toThrow(/aborted/);
+    });
+
+    it("throws image-timeout when fetch exceeds timeout", async () => {
+      vi.useFakeTimers();
+      mockFetchReject(new DOMException("aborted", "AbortError"));
+      const promise = fetchImageBlob("https://example.com/cat.jpg");
+      vi.advanceTimersByTime(31_000);
+      await expect(promise).rejects.toThrow(/image-timeout/);
+      vi.useRealTimers();
     });
   });
 });

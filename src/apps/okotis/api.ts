@@ -130,6 +130,32 @@ export async function generateCat(imgPrompt: string, breed: string): Promise<str
   return buildImageUrl(prompt);
 }
 
+const IMAGE_TIMEOUT_MS = 30_000;
+
+export async function fetchImageBlob(src: string, signal?: AbortSignal): Promise<string> {
+  if (signal?.aborted) throw new DOMException("aborted", "AbortError");
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), IMAGE_TIMEOUT_MS);
+  const onAbort = () => controller.abort();
+  if (signal) signal.addEventListener("abort", onAbort, { once: true });
+
+  try {
+    const res = await fetch(src, { signal: controller.signal });
+    if (!res.ok) throw new Error(`image-http-${res.status}`);
+    const blob = await res.blob();
+    if (!blob.type.startsWith("image/")) throw new Error("image-bad-type");
+    return URL.createObjectURL(blob);
+  } catch (err) {
+    if (signal?.aborted) throw err;
+    if (controller.signal.aborted) throw new Error("image-timeout");
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+    if (signal) signal.removeEventListener("abort", onAbort);
+  }
+}
+
 export function isAbortError(err: unknown): boolean {
   return err instanceof DOMException && err.name === "AbortError";
 }
