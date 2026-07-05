@@ -70,7 +70,7 @@ export default function Home() {
                   <h2 className="mb-1 line-clamp-1 text-lg font-medium">{app.title}</h2>
                   <p className="line-clamp-2 text-sm text-muted">{app.description}</p>
                   {app.tags !== undefined && app.tags.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
+                    <div className="mt-auto flex flex-wrap gap-1.5 pt-3">
                       {app.tags.map((tag) => (
                         <span
                           key={tag}
