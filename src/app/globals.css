@@ -18,6 +18,10 @@ body {
   color: var(--color-fg);
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
