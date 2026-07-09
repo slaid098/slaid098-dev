@@ -106,8 +106,20 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
                 rel="noopener noreferrer"
                 className="inline-block rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-black transition hover:scale-[1.02]"
               >
-                Скачать последнюю версию
+                {manifest.releaseLabel ?? "Скачать последнюю версию"}
               </a>
+              {manifest.sourceUrl && (
+                <div className="mt-3">
+                  <a
+                    href={manifest.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-muted transition hover:text-accent"
+                  >
+                    GitHub →
+                  </a>
+                </div>
+              )}
             </div>
           )}
         </section>

@@ -39,6 +39,7 @@ describe("apps manifests", () => {
     const takeBreak = getNeighbors("take-break");
     const ytVideoDownloader = getNeighbors("yt-video-downloader");
     const voiceAssistant = getNeighbors("voice-assistant");
+    const opencodeVoiceDictation = getNeighbors("opencode-voice-dictation");
     expect(bomzh.prev).toBeNull();
     expect(bomzh.next).toBe("okotis");
     expect(okotis.prev).toBe("bomzh");
@@ -48,7 +49,9 @@ describe("apps manifests", () => {
     expect(ytVideoDownloader.prev).toBe("take-break");
     expect(ytVideoDownloader.next).toBe("voice-assistant");
     expect(voiceAssistant.prev).toBe("yt-video-downloader");
-    expect(voiceAssistant.next).toBeNull();
+    expect(voiceAssistant.next).toBe("opencode-voice-dictation");
+    expect(opencodeVoiceDictation.prev).toBe("voice-assistant");
+    expect(opencodeVoiceDictation.next).toBeNull();
   });
 
   it("returns null neighbors for unknown slug", () => {
@@ -93,6 +96,28 @@ describe("manifest edge cases", () => {
   it("returns null for empty manifest file", () => {
     writeTmpManifest("");
     expect(readManifest("__tmp_test_app")).toBeNull();
+  });
+
+  it("normalizes releaseLabel and sourceUrl when provided", () => {
+    writeTmpManifest(
+      JSON.stringify({
+        releaseUrl: "https://example.com/script.user.js",
+        releaseLabel: "Установить userscript",
+        sourceUrl: "https://github.com/example/repo",
+      }),
+    );
+    const m = readManifest("__tmp_test_app");
+    expect(m?.releaseUrl).toBe("https://example.com/script.user.js");
+    expect(m?.releaseLabel).toBe("Установить userscript");
+    expect(m?.sourceUrl).toBe("https://github.com/example/repo");
+  });
+
+  it("omits releaseLabel and sourceUrl when not provided", () => {
+    writeTmpManifest(JSON.stringify({ releaseUrl: "https://example.com/download" }));
+    const m = readManifest("__tmp_test_app");
+    expect(m?.releaseUrl).toBe("https://example.com/download");
+    expect(m?.releaseLabel).toBeUndefined();
+    expect(m?.sourceUrl).toBeUndefined();
   });
 });
 

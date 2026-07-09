@@ -8,6 +8,8 @@ export type Manifest = {
   tags?: string[];
   type?: "interactive" | "showcase";
   releaseUrl?: string;
+  releaseLabel?: string;
+  sourceUrl?: string;
   features?: string[];
   ogImage?: string;
   created?: string;
@@ -83,6 +85,12 @@ function normalizeManifest(data: Partial<Manifest>, fallbackSlug: string): Manif
   }
   if (data.releaseUrl !== undefined) {
     out.releaseUrl = data.releaseUrl;
+  }
+  if (data.releaseLabel !== undefined) {
+    out.releaseLabel = data.releaseLabel;
+  }
+  if (data.sourceUrl !== undefined) {
+    out.sourceUrl = data.sourceUrl;
   }
   if (data.features !== undefined) {
     out.features = data.features;
