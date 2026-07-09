@@ -1,0 +1,21 @@
+{
+  "slug": "opencode-voice-dictation",
+  "title": "OpenCode Voice Dictation",
+  "description": "Голосовая диктовка для OpenCode web через Whisper (Groq API). ПК и телефон.",
+  "tags": ["утилиты"],
+  "type": "showcase",
+  "releaseUrl": "https://raw.githubusercontent.com/slaid098/opencode-voice-dictation/dist/opencode-voice-dictation.user.js",
+  "releaseLabel": "Установить userscript",
+  "sourceUrl": "https://github.com/slaid098/opencode-voice-dictation",
+  "features": [
+    "Whisper (Groq API) — распознавание речи",
+    "Работает на ПК и Android (Firefox + Tampermonkey)",
+    "Кнопка микрофона в поле ввода OpenCode",
+    "Горячая клавиша Ctrl+Space на ПК",
+    "Автоотправка после транскрипции",
+    "Автообновление скрипта через CI",
+    "Выбор модели: whisper-large-v3 / turbo",
+    "Требуется Violentmonkey или Tampermonkey"
+  ],
+  "created": "2026-07-09"
+}
