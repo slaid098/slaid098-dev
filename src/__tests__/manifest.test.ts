@@ -20,7 +20,7 @@ describe("apps manifests", () => {
     const m = readManifest("bomzh");
     expect(m).not.toBeNull();
     expect(m?.title).toBe("Бомж");
-    expect(m?.created).toBe("2026-07-04");
+    expect(m?.created).toBe("2026-07-04T13:47");
   });
 
   it("returns all manifests", () => {
@@ -40,18 +40,18 @@ describe("apps manifests", () => {
     const ytVideoDownloader = getNeighbors("yt-video-downloader");
     const voiceAssistant = getNeighbors("voice-assistant");
     const opencodeVoiceDictation = getNeighbors("opencode-voice-dictation");
-    expect(bomzh.prev).toBeNull();
-    expect(bomzh.next).toBe("okotis");
-    expect(okotis.prev).toBe("bomzh");
-    expect(okotis.next).toBe("take-break");
-    expect(takeBreak.prev).toBe("okotis");
-    expect(takeBreak.next).toBe("yt-video-downloader");
-    expect(ytVideoDownloader.prev).toBe("take-break");
-    expect(ytVideoDownloader.next).toBe("voice-assistant");
-    expect(voiceAssistant.prev).toBe("yt-video-downloader");
-    expect(voiceAssistant.next).toBe("opencode-voice-dictation");
-    expect(opencodeVoiceDictation.prev).toBe("voice-assistant");
-    expect(opencodeVoiceDictation.next).toBeNull();
+    expect(opencodeVoiceDictation.prev).toBeNull();
+    expect(opencodeVoiceDictation.next).toBe("voice-assistant");
+    expect(voiceAssistant.prev).toBe("opencode-voice-dictation");
+    expect(voiceAssistant.next).toBe("yt-video-downloader");
+    expect(ytVideoDownloader.prev).toBe("voice-assistant");
+    expect(ytVideoDownloader.next).toBe("take-break");
+    expect(takeBreak.prev).toBe("yt-video-downloader");
+    expect(takeBreak.next).toBe("okotis");
+    expect(okotis.prev).toBe("take-break");
+    expect(okotis.next).toBe("bomzh");
+    expect(bomzh.prev).toBe("okotis");
+    expect(bomzh.next).toBeNull();
   });
 
   it("returns null neighbors for unknown slug", () => {
@@ -128,23 +128,23 @@ describe("byCreated sort", () => {
     return out;
   };
 
-  it("sorts older first", () => {
-    const a = m("a", "2026-03-01");
-    const b = m("b", "2026-07-03");
-    expect([a, b].sort(byCreated)).toEqual([a, b]);
-    expect([b, a].sort(byCreated)).toEqual([a, b]);
+  it("sorts newer first", () => {
+    const a = m("a", "2026-03-01T10:00");
+    const b = m("b", "2026-07-03T10:00");
+    expect([a, b].sort(byCreated)).toEqual([b, a]);
+    expect([b, a].sort(byCreated)).toEqual([b, a]);
   });
 
   it("sorts missing created last", () => {
-    const dated = m("a", "2026-07-03");
+    const dated = m("a", "2026-07-03T10:00");
     const undated = m("b");
     expect([dated, undated].sort(byCreated)).toEqual([dated, undated]);
     expect([undated, dated].sort(byCreated)).toEqual([dated, undated]);
   });
 
   it("tie-breaks by slug when dates equal", () => {
-    const a = m("b", "2026-07-03");
-    const b = m("a", "2026-07-03");
+    const a = m("b", "2026-07-03T10:00");
+    const b = m("a", "2026-07-03T10:00");
     expect([a, b].sort(byCreated)).toEqual([b, a]);
   });
 

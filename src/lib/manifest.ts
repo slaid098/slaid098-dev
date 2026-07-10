@@ -64,10 +64,10 @@ export function getNeighbors(slug: string): { prev: string | null; next: string 
 }
 
 export function byCreated(a: Manifest, b: Manifest): number {
-  const ca = a.created ?? "9999-12-31";
-  const cb = b.created ?? "9999-12-31";
+  const ca = a.created ?? "0000-01-01T00:00";
+  const cb = b.created ?? "0000-01-01T00:00";
   if (ca === cb) return a.slug.localeCompare(b.slug);
-  return ca < cb ? -1 : 1;
+  return ca > cb ? -1 : 1;
 }
 
 function normalizeManifest(data: Partial<Manifest>, fallbackSlug: string): Manifest {
