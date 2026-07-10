@@ -13,7 +13,7 @@ import {
 import styles from "./app.module.css";
 import { pickLoadingMessage } from "./prompts";
 
-type Screen = "hero" | "preview" | "loading" | "result";
+type Screen = "hero" | "preview" | "loading" | "result" | "camera";
 type LoadingPhase = "analyzing" | "thinking" | "drawing";
 
 const LOADING_PHASES: { phase: LoadingPhase; text: string }[] = [
@@ -49,12 +49,15 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
   const abortRef = useRef<AbortController | null>(null);
   const imgSrcRef = useRef<string | null>(null);
   const blobUrlRef = useRef<string | null>(null);
+  const cameraVideoRef = useRef<HTMLVideoElement>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
 
   // Abort in-flight requests and revoke blob URL on unmount
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
       if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+      stopCamera();
     };
   }, []);
 
@@ -72,6 +75,71 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
     setError(message);
     setScreen("hero");
   }, []);
+
+  const stopCamera = useCallback(() => {
+    const stream = cameraStreamRef.current;
+    if (stream) {
+      for (const track of stream.getTracks()) track.stop();
+    }
+    cameraStreamRef.current = null;
+    if (cameraVideoRef.current) {
+      cameraVideoRef.current.srcObject = null;
+    }
+  }, []);
+
+  const startCamera = useCallback(async () => {
+    const mediaDevices = navigator.mediaDevices;
+    if (!mediaDevices?.getUserMedia) {
+      // No getUserMedia — fall back to file picker (without capture)
+      if (cameraInputRef.current) {
+        cameraInputRef.current.removeAttribute("capture");
+        cameraInputRef.current.click();
+      }
+      return;
+    }
+    try {
+      const stream = await mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false,
+      });
+      cameraStreamRef.current = stream;
+      setScreen("camera");
+      requestAnimationFrame(() => {
+        const video = cameraVideoRef.current;
+        if (video) {
+          video.srcObject = stream;
+          video.play().catch(() => {});
+        }
+      });
+    } catch {
+      // Permission denied or unavailable — fall back to file picker
+      if (cameraInputRef.current) {
+        cameraInputRef.current.removeAttribute("capture");
+        cameraInputRef.current.click();
+      }
+    }
+  }, []);
+
+  const captureFrame = useCallback(() => {
+    const video = cameraVideoRef.current;
+    if (!video || !video.videoWidth) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    stopCamera();
+    setSelfieUrl(dataUrl);
+    setError(null);
+    setScreen("preview");
+  }, [stopCamera]);
+
+  const cancelCamera = useCallback(() => {
+    stopCamera();
+    setScreen("hero");
+  }, [stopCamera]);
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -182,6 +250,7 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
       blobUrlRef.current = null;
     }
     imgSrcRef.current = null;
+    stopCamera();
     setSelfieUrl(null);
     setResult(null);
     setResultImgUrl(null);
@@ -190,8 +259,11 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
     setImgLoading(false);
     setScreen("hero");
     if (fileInputRef.current) fileInputRef.current.value = "";
-    if (cameraInputRef.current) cameraInputRef.current.value = "";
-  }, []);
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = "";
+      cameraInputRef.current.setAttribute("capture", "user");
+    }
+  }, [stopCamera]);
 
   const handleRetryImage = useCallback(async () => {
     if (!imgSrcRef.current) return;
@@ -294,10 +366,39 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
             </button>
             <button
               type="button"
-              onClick={() => cameraInputRef.current?.click()}
+              onClick={() => void startCamera()}
               className="rounded-lg border border-line bg-surface px-6 py-3 text-sm font-medium text-muted transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               Сделать селфи сейчас
+            </button>
+          </div>
+        </div>
+      )}
+
+      {screen === "camera" && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-black">
+          <video
+            ref={cameraVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className="flex-1 w-full object-cover"
+            aria-label="Предпросмотр камеры"
+          />
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-8 py-8 bg-gradient-to-t from-black/80 to-transparent">
+            <button
+              type="button"
+              onClick={cancelCamera}
+              className="rounded-lg border border-white/30 bg-white/10 px-5 py-3 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/20"
+            >
+              Отмена
+            </button>
+            <button
+              type="button"
+              onClick={captureFrame}
+              className="rounded-full bg-accent px-8 py-4 text-sm font-bold text-black transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            >
+              Сделать фото
             </button>
           </div>
         </div>
