@@ -64,7 +64,7 @@ export default function Home() {
                       dateTime={app.created}
                       className="mb-2 block font-mono text-xs text-muted"
                     >
-                      {app.created}
+                      {app.created.replace("T", " ")}
                     </time>
                   )}
                   <h2 className="mb-1 line-clamp-1 text-lg font-medium">{app.title}</h2>
