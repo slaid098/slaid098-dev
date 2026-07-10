@@ -321,7 +321,7 @@ export default function CatifyMeApp({ manifest: _manifest }: { manifest: Manifes
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/webp,image/gif"
         hidden
         aria-label="Загрузить селфи с устройства"
         onChange={(e) => {
