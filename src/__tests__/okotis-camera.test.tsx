@@ -216,4 +216,11 @@ describe("CatifyMeApp camera", () => {
 
     expect(mockTrack.stop).toHaveBeenCalled();
   });
+
+  it("gallery input uses specific MIME types, not image/*", () => {
+    render(<CatifyMeApp manifest={mockManifest} />);
+    const galleryInput = screen.getByLabelText("Загрузить селфи с устройства") as HTMLInputElement;
+    expect(galleryInput.accept).toBe("image/png,image/jpeg,image/webp,image/gif");
+    expect(galleryInput.accept).not.toBe("image/*");
+  });
 });
