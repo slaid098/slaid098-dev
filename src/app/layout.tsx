@@ -80,7 +80,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <span className="sr-only">GitHub</span>
             </a>
             <a
-              href="https://t.me/slaid098"
+              href="https://t.me/slaid098_dev"
               aria-label="Telegram"
               className="text-muted transition hover:text-accent"
               rel="noreferrer"
