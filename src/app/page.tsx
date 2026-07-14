@@ -40,19 +40,18 @@ export default function Home() {
     <div className="mx-auto max-w-6xl px-6 py-16">
       <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
         Утилиты для автоматизации
-        <a
-          href="https://t.me/slaid098_dev"
-          aria-label="Telegram"
-          className="ml-3 inline-flex align-middle text-muted transition hover:text-accent"
-          rel="noreferrer"
-          target="_blank"
-        >
-          <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path d="M14.94 2.62 12.9 12.3c-.15.68-.55.85-1.12.53l-3.1-2.29-1.5 1.44c-.17.17-.31.31-.62.31l.22-3.16L12.4 4.3c.25-.22-.05-.34-.39-.12L5.6 8.93 2.55 7.97c-.66-.21-.68-.66.14-.98l10.93-4.21c.55-.2 1.04.13.86.84Z" />
-          </svg>
-          <span className="sr-only">Telegram</span>
-        </a>
       </h1>
+      <a
+        href="https://t.me/slaid098_dev"
+        className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-sm text-muted transition hover:text-accent"
+        rel="noreferrer"
+        target="_blank"
+      >
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M14.94 2.62 12.9 12.3c-.15.68-.55.85-1.12.53l-3.1-2.29-1.5 1.44c-.17.17-.31.31-.62.31l.22-3.16L12.4 4.3c.25-.22-.05-.34-.39-.12L5.6 8.93 2.55 7.97c-.66-.21-.68-.66.14-.98l10.93-4.21c.55-.2 1.04.13.86.84Z" />
+        </svg>
+        Telegram
+      </a>
       {apps.length === 0 ? (
         <p className="mt-6 text-muted">Пока пусто. Загляни позже.</p>
       ) : (
