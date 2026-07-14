@@ -26,7 +26,7 @@ export default function Home() {
     "@id": baseUrl,
     name: "slaid098.dev",
     url: baseUrl,
-    description: "Утилиты для автоматизации и цифровые эксперименты.",
+    description: "Утилиты для автоматизации.",
     inLanguage: "ru-RU",
   };
   const orgLd = {
@@ -39,8 +39,19 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
       <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-        Заходи, если что<span className="text-accent">?</span>
+        Утилиты для автоматизации
       </h1>
+      <a
+        href="https://t.me/slaid098_dev"
+        className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-sm text-muted transition hover:text-accent"
+        rel="noreferrer"
+        target="_blank"
+      >
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M14.94 2.62 12.9 12.3c-.15.68-.55.85-1.12.53l-3.1-2.29-1.5 1.44c-.17.17-.31.31-.62.31l.22-3.16L12.4 4.3c.25-.22-.05-.34-.39-.12L5.6 8.93 2.55 7.97c-.66-.21-.68-.66.14-.98l10.93-4.21c.55-.2 1.04.13.86.84Z" />
+        </svg>
+        Telegram
+      </a>
       {apps.length === 0 ? (
         <p className="mt-6 text-muted">Пока пусто. Загляни позже.</p>
       ) : (

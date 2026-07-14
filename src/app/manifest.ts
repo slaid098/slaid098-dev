@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "slaid098.dev — Лаборатория Slade",
+    name: "slaid098.dev — Утилиты для автоматизации",
     short_name: "slaid098",
-    description: "Утилиты для автоматизации и цифровые эксперименты.",
+    description: "Утилиты для автоматизации.",
     start_url: "/",
     display: "standalone",
     background_color: "#0a0a0a",

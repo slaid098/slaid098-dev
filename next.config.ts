@@ -7,16 +7,6 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: "/hobo",
-        destination: "/bomzh",
-        permanent: true,
-      },
-      {
-        source: "/hobo/:path*",
-        destination: "/bomzh/:path*",
-        permanent: true,
-      },
-      {
         source: "/youtube",
         destination: "/yt-video-downloader",
         permanent: true,

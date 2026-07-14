@@ -12,21 +12,21 @@ import type { Manifest } from "@/lib/manifest";
 import { afterEach, describe, expect, it } from "vitest";
 
 describe("apps manifests", () => {
-  it("includes bomzh slug", () => {
-    expect(getAllSlugs()).toContain("bomzh");
+  it("includes okotis slug", () => {
+    expect(getAllSlugs()).toContain("okotis");
   });
 
-  it("reads bomzh manifest", () => {
-    const m = readManifest("bomzh");
+  it("reads okotis manifest", () => {
+    const m = readManifest("okotis");
     expect(m).not.toBeNull();
-    expect(m?.title).toBe("Бомж");
-    expect(m?.created).toBe("2026-07-04T13:47");
+    expect(m?.title).toBe("Окотись");
+    expect(m?.created).toBe("2026-07-04T15:23");
   });
 
   it("returns all manifests", () => {
     const all = readAllManifests();
     expect(all.length).toBeGreaterThan(0);
-    expect(all.some((m) => m.slug === "bomzh")).toBe(true);
+    expect(all.some((m) => m.slug === "okotis")).toBe(true);
   });
 
   it("returns null for missing slug", () => {
@@ -34,24 +34,18 @@ describe("apps manifests", () => {
   });
 
   it("returns correct neighbors in multi-app ordering", () => {
-    const bomzh = getNeighbors("bomzh");
     const okotis = getNeighbors("okotis");
     const takeBreak = getNeighbors("take-break");
     const ytVideoDownloader = getNeighbors("yt-video-downloader");
-    const voiceAssistant = getNeighbors("voice-assistant");
     const opencodeVoiceDictation = getNeighbors("opencode-voice-dictation");
     expect(opencodeVoiceDictation.prev).toBeNull();
-    expect(opencodeVoiceDictation.next).toBe("voice-assistant");
-    expect(voiceAssistant.prev).toBe("opencode-voice-dictation");
-    expect(voiceAssistant.next).toBe("yt-video-downloader");
-    expect(ytVideoDownloader.prev).toBe("voice-assistant");
+    expect(opencodeVoiceDictation.next).toBe("yt-video-downloader");
+    expect(ytVideoDownloader.prev).toBe("opencode-voice-dictation");
     expect(ytVideoDownloader.next).toBe("take-break");
     expect(takeBreak.prev).toBe("yt-video-downloader");
     expect(takeBreak.next).toBe("okotis");
     expect(okotis.prev).toBe("take-break");
-    expect(okotis.next).toBe("bomzh");
-    expect(bomzh.prev).toBe("okotis");
-    expect(bomzh.next).toBeNull();
+    expect(okotis.next).toBeNull();
   });
 
   it("returns null neighbors for unknown slug", () => {
