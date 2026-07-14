@@ -18,16 +18,16 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Лаборатория Slaid // slaid098.dev",
+    default: "Утилиты для автоматизации // slaid098.dev",
     template: "%s // slaid098.dev",
   },
-  description: "Утилиты для автоматизации и цифровые эксперименты.",
+  description: "Утилиты для автоматизации.",
   manifest: "/manifest.webmanifest",
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Лаборатория Slaid // slaid098.dev",
-    description: "Утилиты для автоматизации и цифровые эксперименты.",
+    title: "Утилиты для автоматизации // slaid098.dev",
+    description: "Утилиты для автоматизации.",
     type: "website",
     locale: "ru_RU",
     url: baseUrl,
@@ -36,8 +36,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Лаборатория Slaid // slaid098.dev",
-    description: "Утилиты для автоматизации и цифровые эксперименты.",
+    title: "Утилиты для автоматизации // slaid098.dev",
+    description: "Утилиты для автоматизации.",
     images: ["/og-image.png"],
   },
 };
