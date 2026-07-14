@@ -12,24 +12,24 @@ describe("[slug] generateMetadata", () => {
     expect(meta).toEqual({});
   });
 
-  it("returns title + description + canonical for bomzh", async () => {
-    const meta = await getMeta("bomzh");
-    expect(meta.title).toBe("Бомж");
-    expect(meta.description).toBe("Жми на бомжа, чтобы заставить его орать.");
-    expect(meta.alternates?.canonical).toBe("/bomzh");
+  it("returns title + description + canonical for okotis", async () => {
+    const meta = await getMeta("okotis");
+    expect(meta.title).toBe("Окотись");
+    expect(meta.description).toBe("Загрузи селфи — получишь мультяшного кота под свой вайб.");
+    expect(meta.alternates?.canonical).toBe("/okotis");
   });
 
   it("uses cover route as ogImage fallback (no ogImage field)", async () => {
-    const meta = await getMeta("bomzh");
+    const meta = await getMeta("okotis");
     const ogImages = meta.openGraph?.images;
     expect(ogImages).toBeDefined();
     const first = Array.isArray(ogImages) ? ogImages[0] : ogImages;
     const url = typeof first === "string" ? first : (first as { url: string })?.url;
-    expect(url).toContain("/apps/bomzh/cover");
+    expect(url).toContain("/apps/okotis/cover");
   });
 
   it("includes OG locale ru_RU", async () => {
-    const meta = await getMeta("bomzh");
+    const meta = await getMeta("okotis");
     expect(meta.openGraph?.locale).toBe("ru_RU");
   });
 });
