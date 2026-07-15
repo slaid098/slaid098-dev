@@ -37,10 +37,13 @@ describe("apps manifests", () => {
     const okotis = getNeighbors("okotis");
     const takeBreak = getNeighbors("take-break");
     const ytVideoDownloader = getNeighbors("yt-video-downloader");
+    const voiceAssistant = getNeighbors("voice-assistant");
     const opencodeVoiceDictation = getNeighbors("opencode-voice-dictation");
     expect(opencodeVoiceDictation.prev).toBeNull();
-    expect(opencodeVoiceDictation.next).toBe("yt-video-downloader");
-    expect(ytVideoDownloader.prev).toBe("opencode-voice-dictation");
+    expect(opencodeVoiceDictation.next).toBe("voice-assistant");
+    expect(voiceAssistant.prev).toBe("opencode-voice-dictation");
+    expect(voiceAssistant.next).toBe("yt-video-downloader");
+    expect(ytVideoDownloader.prev).toBe("voice-assistant");
     expect(ytVideoDownloader.next).toBe("take-break");
     expect(takeBreak.prev).toBe("yt-video-downloader");
     expect(takeBreak.next).toBe("okotis");
