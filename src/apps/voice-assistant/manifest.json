@@ -1,0 +1,21 @@
+{
+  "slug": "voice-assistant",
+  "title": "Голосовой помощник",
+  "description": "Голосовой ассистент для незрячих людей. YouTube, погода, таймер — голосом на русском.",
+  "tags": ["утилиты"],
+  "type": "showcase",
+  "releaseUrl": "https://github.com/slaid098/voice_assistant/releases",
+  "features": [
+    "Wake word «вики» — активация голосом",
+    "YouTube поиск: «ютуб котики» → озвучка → навигация",
+    "Погода без API ключа (Open-Meteo)",
+    "Таймер с озвучкой истечения",
+    "Текущие дата и время",
+    "Название текущего видео на YouTube",
+    "YouTube без рекламы через браузер Vivaldi",
+    "TTS: Google онлайн → Piper офлайн fallback",
+    "Звуковые ярлыки для accessibility",
+    "Для Windows 10+"
+  ],
+  "created": "2026-07-05T11:15"
+}
